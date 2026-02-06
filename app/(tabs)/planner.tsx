@@ -10,11 +10,11 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { getWeekStart, getWeekDates, formatDate, formatShortDay, isToday } from "@/lib/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS, SHADOWS } from "@/constants/theme";
+import { api } from "@/convex/_generated/api";
 
 const MEAL_TYPES = ["breakfast", "lunch", "dinner"] as const;
 const MEAL_ICONS: Record<string, string> = {

@@ -24,7 +24,13 @@ export const saveRecipe = mutation({
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("savedRecipes", {
-      ...args,
+      title: args.title,
+      source: args.source,
+      spoonacularId: args.spoonacularId ?? undefined,
+      sourceUrl: args.sourceUrl ?? undefined,
+      imageUrl: args.imageUrl ?? undefined,
+      ingredients: args.ingredients,
+      servings: args.servings,
       userId: "default_user",
     });
   },

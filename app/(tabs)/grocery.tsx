@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import * as Clipboard from "expo-clipboard";
 import { useGroceryStore } from "@/store/groceryStore";
 import { aggregateGroceryList, groupByCategory } from "@/lib/groceryAggregator";
@@ -19,6 +18,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { GROCERY_CATEGORIES } from "@/constants/categories";
 import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS } from "@/constants/theme";
+import { api } from "@/convex/_generated/api";
 
 export default function GroceryScreen() {
   const savedRecipes = useQuery(api.recipes.getSavedRecipes);

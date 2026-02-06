@@ -1,9 +1,8 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Alert, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, Alert, StyleSheet, Platform } from "react-native";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { Badge } from "./ui/Badge";
 import * as Haptics from "expo-haptics";
 import {
@@ -13,6 +12,7 @@ import {
   BORDER_RADIUS,
   SHADOWS,
 } from "@/constants/theme";
+import { api } from "@/convex/_generated/api";
 
 interface SavedRecipeCardProps {
   recipe: any;
@@ -21,18 +21,24 @@ interface SavedRecipeCardProps {
 export function SavedRecipeCard({ recipe }: SavedRecipeCardProps) {
   const deleteRecipe = useMutation(api.recipes.deleteRecipe);
 
+  const doDelete = async () => {
+    await deleteRecipe({ id: recipe._id });
+    if (Platform.OS !== "web") {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    }
+  };
+
   const handleDelete = () => {
-    Alert.alert("Delete Recipe", `Remove "${recipe.title}"?`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          await deleteRecipe({ id: recipe._id });
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-        },
-      },
-    ]);
+    if (Platform.OS === "web") {
+      if (window.confirm(`Remove "${recipe.title}"?`)) {
+        doDelete();
+      }
+    } else {
+      Alert.alert("Delete Recipe", `Remove "${recipe.title}"?`, [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: doDelete },
+      ]);
+    }
   };
 
   return (
