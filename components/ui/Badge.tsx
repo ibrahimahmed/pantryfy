@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS } from "@/constants/theme";
+import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS, SHADOWS, CLAY_BORDER } from "@/constants/theme";
 
 interface BadgeProps {
   children: React.ReactNode;
@@ -9,11 +9,11 @@ interface BadgeProps {
 }
 
 const BADGE_COLORS = {
-  success: { bg: "#E8F5E9", text: "#2E7D32" },
-  warning: { bg: "#FFF3E0", text: "#E65100" },
-  error: { bg: "#FFEBEE", text: "#C62828" },
-  primary: { bg: "#E8F5E9", text: COLORS.primary },
-  secondary: { bg: "#FFF3E0", text: COLORS.secondary },
+  success: { bg: COLORS.successMuted, text: "#2E7D4A" },
+  warning: { bg: COLORS.warningMuted, text: "#B8860B" },
+  error: { bg: COLORS.errorMuted, text: "#C62828" },
+  primary: { bg: COLORS.primaryMuted, text: COLORS.primaryDark },
+  secondary: { bg: COLORS.secondaryMuted, text: COLORS.secondaryDark },
 };
 
 export function Badge({ children, color = "primary", small }: BadgeProps) {
@@ -42,18 +42,22 @@ export function Badge({ children, color = "primary", small }: BadgeProps) {
 
 const styles = StyleSheet.create({
   badge: {
-    paddingHorizontal: SPACING.sm + 2,
-    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.sm + 4,
+    paddingVertical: SPACING.xs + 2,
     borderRadius: BORDER_RADIUS.full,
     alignSelf: "flex-start",
+    ...SHADOWS.sm,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.6)",
+    borderTopColor: "rgba(255,255,255,0.8)",
   },
   small: {
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 2,
+    paddingHorizontal: SPACING.sm + 2,
+    paddingVertical: SPACING.xs,
   },
   text: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   smallText: {
     fontSize: FONT_SIZE.xs,

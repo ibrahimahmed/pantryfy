@@ -10,10 +10,23 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery, useMutation } from "convex/react";
-import { getWeekStart, getWeekDates, formatDate, formatShortDay, isToday } from "@/lib/dateUtils";
+import {
+  getWeekStart,
+  getWeekDates,
+  formatDate,
+  formatShortDay,
+  isToday,
+} from "@/lib/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS, SHADOWS } from "@/constants/theme";
+import {
+  COLORS,
+  SPACING,
+  FONT_SIZE,
+  BORDER_RADIUS,
+  SHADOWS,
+  CLAY_BORDER,
+} from "@/constants/theme";
 import { api } from "@/convex/_generated/api";
 
 const MEAL_TYPES = ["breakfast", "lunch", "dinner"] as const;
@@ -93,7 +106,7 @@ export default function PlannerScreen() {
           onPress={() => setWeekOffset((w) => w - 1)}
           style={styles.navButton}
         >
-          <Ionicons name="chevron-back" size={24} color={COLORS.text} />
+          <Ionicons name="chevron-back" size={22} color={COLORS.text} />
         </TouchableOpacity>
         <View style={styles.weekLabel}>
           <Text style={styles.weekText}>
@@ -109,7 +122,7 @@ export default function PlannerScreen() {
           onPress={() => setWeekOffset((w) => w + 1)}
           style={styles.navButton}
         >
-          <Ionicons name="chevron-forward" size={24} color={COLORS.text} />
+          <Ionicons name="chevron-forward" size={22} color={COLORS.text} />
         </TouchableOpacity>
       </View>
 
@@ -133,9 +146,21 @@ export default function PlannerScreen() {
               >
                 {formatShortDay(date)}
               </Text>
-              <Text style={styles.dayDate}>
-                {new Date(date + "T12:00:00").getDate()}
-              </Text>
+              <View
+                style={[
+                  styles.dayDatePill,
+                  isToday(date) && styles.dayDatePillToday,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.dayDate,
+                    isToday(date) && styles.dayDateToday,
+                  ]}
+                >
+                  {new Date(date + "T12:00:00").getDate()}
+                </Text>
+              </View>
             </View>
             <View style={styles.mealSlots}>
               {MEAL_TYPES.map((mealType) => {
@@ -190,8 +215,11 @@ export default function PlannerScreen() {
                 ? `${selectedSlot.mealType} on ${formatDate(selectedSlot.date)}`
                 : ""}
             </Text>
-            <TouchableOpacity onPress={() => setPickerVisible(false)}>
-              <Ionicons name="close" size={24} color={COLORS.text} />
+            <TouchableOpacity
+              onPress={() => setPickerVisible(false)}
+              style={styles.pickerClose}
+            >
+              <Ionicons name="close" size={22} color={COLORS.text} />
             </TouchableOpacity>
           </View>
           {savedRecipes.length === 0 ? (
@@ -234,26 +262,36 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.sm,
+    paddingVertical: SPACING.sm + 2,
+    marginHorizontal: SPACING.md,
+    marginTop: SPACING.sm,
     backgroundColor: COLORS.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.divider,
+    borderRadius: BORDER_RADIUS.lg,
+    ...SHADOWS.md,
+    ...CLAY_BORDER.medium,
   },
   navButton: {
-    padding: SPACING.sm,
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    backgroundColor: COLORS.background,
+    alignItems: "center",
+    justifyContent: "center",
+    ...SHADOWS.sm,
+    ...CLAY_BORDER.subtle,
   },
   weekLabel: {
     alignItems: "center",
   },
   weekText: {
     fontSize: FONT_SIZE.md,
-    fontWeight: "600",
+    fontWeight: "700",
     color: COLORS.text,
   },
   todayLink: {
     fontSize: FONT_SIZE.xs,
     color: COLORS.primary,
-    fontWeight: "600",
+    fontWeight: "700",
     marginTop: 2,
   },
   scrollView: {
@@ -261,18 +299,21 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: SPACING.md,
-    gap: SPACING.sm,
-    paddingBottom: SPACING.xl * 2,
+    gap: SPACING.sm + 2,
+    paddingBottom: SPACING.xl * 4,
   },
   dayCard: {
     backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.sm + 2,
-    ...SHADOWS.sm,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.md,
+    ...SHADOWS.md,
+    ...CLAY_BORDER.medium,
   },
   dayCardToday: {
-    borderWidth: 2,
-    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primaryMuted,
+    borderColor: COLORS.primaryLight,
+    borderTopColor: "rgba(255,255,255,0.7)",
+    borderLeftColor: "rgba(255,255,255,0.6)",
   },
   dayHeader: {
     flexDirection: "row",
@@ -288,38 +329,56 @@ const styles = StyleSheet.create({
   dayNameToday: {
     color: COLORS.primary,
   },
+  dayDatePill: {
+    width: 28,
+    height: 28,
+    borderRadius: 10,
+    backgroundColor: COLORS.background,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dayDatePillToday: {
+    backgroundColor: COLORS.primary,
+  },
   dayDate: {
     fontSize: FONT_SIZE.sm,
     color: COLORS.textSecondary,
+    fontWeight: "600",
+  },
+  dayDateToday: {
+    color: COLORS.textOnPrimary,
   },
   mealSlots: {
-    gap: SPACING.xs,
+    gap: SPACING.xs + 2,
   },
   mealSlot: {
     flexDirection: "row",
     alignItems: "center",
     gap: SPACING.sm,
-    paddingVertical: SPACING.sm - 2,
-    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.sm + 2,
     borderRadius: BORDER_RADIUS.sm,
     backgroundColor: COLORS.background,
+    ...SHADOWS.inset,
     borderWidth: 1,
-    borderColor: COLORS.divider,
+    borderColor: "rgba(255,255,255,0.5)",
     borderStyle: "dashed",
   },
   mealSlotFilled: {
-    backgroundColor: "#E8F5E9",
-    borderColor: COLORS.primaryLight,
+    backgroundColor: COLORS.successMuted,
+    borderColor: COLORS.success,
     borderStyle: "solid",
+    borderWidth: 1.5,
+    ...SHADOWS.sm,
   },
   mealIcon: {
-    fontSize: 16,
+    fontSize: 18,
   },
   mealName: {
     flex: 1,
     fontSize: FONT_SIZE.sm,
     color: COLORS.text,
-    fontWeight: "500",
+    fontWeight: "600",
   },
   pickerContainer: {
     flex: 1,
@@ -330,8 +389,20 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     padding: SPACING.md,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.divider,
+    backgroundColor: COLORS.surface,
+    borderBottomLeftRadius: BORDER_RADIUS.lg,
+    borderBottomRightRadius: BORDER_RADIUS.lg,
+    ...SHADOWS.sm,
+  },
+  pickerClose: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: COLORS.background,
+    alignItems: "center",
+    justifyContent: "center",
+    ...SHADOWS.sm,
+    ...CLAY_BORDER.subtle,
   },
   pickerTitle: {
     fontSize: FONT_SIZE.md,
@@ -348,11 +419,12 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.md,
     marginBottom: SPACING.sm,
-    ...SHADOWS.sm,
+    ...SHADOWS.md,
+    ...CLAY_BORDER.medium,
   },
   pickerItemText: {
     fontSize: FONT_SIZE.md,
-    fontWeight: "600",
+    fontWeight: "700",
     color: COLORS.text,
   },
   pickerItemMeta: {

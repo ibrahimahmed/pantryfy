@@ -1,7 +1,8 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { COLORS, SPACING, FONT_SIZE } from "@/constants/theme";
+import { LinearGradient } from "expo-linear-gradient";
+import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS, SHADOWS, CLAY_BORDER } from "@/constants/theme";
 
 interface EmptyStateProps {
   icon?: keyof typeof Ionicons.glyphMap;
@@ -20,12 +21,21 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <View style={styles.container}>
-      <Ionicons name={icon} size={64} color={COLORS.border} />
+      <View style={styles.iconContainer}>
+        <Ionicons name={icon} size={48} color={COLORS.textLight} />
+      </View>
       {title && <Text style={styles.title}>{title}</Text>}
       <Text style={styles.message}>{message}</Text>
       {actionLabel && onAction && (
-        <TouchableOpacity style={styles.button} onPress={onAction}>
-          <Text style={styles.buttonText}>{actionLabel}</Text>
+        <TouchableOpacity style={styles.button} onPress={onAction} activeOpacity={0.8}>
+          <LinearGradient
+            colors={[COLORS.primary, COLORS.primaryDark]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.buttonGradient}
+          >
+            <Text style={styles.buttonText}>{actionLabel}</Text>
+          </LinearGradient>
         </TouchableOpacity>
       )}
     </View>
@@ -39,11 +49,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: SPACING.xl,
   },
+  iconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: BORDER_RADIUS.xl,
+    backgroundColor: COLORS.surface,
+    alignItems: "center",
+    justifyContent: "center",
+    ...SHADOWS.md,
+    ...CLAY_BORDER.medium,
+  },
   title: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: "600",
+    fontWeight: "700",
     color: COLORS.text,
-    marginTop: SPACING.md,
+    marginTop: SPACING.lg,
     textAlign: "center",
   },
   message: {
@@ -52,17 +72,23 @@ const styles = StyleSheet.create({
     marginTop: SPACING.sm,
     textAlign: "center",
     lineHeight: 22,
+    paddingHorizontal: SPACING.md,
   },
   button: {
     marginTop: SPACING.lg,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.sm + 2,
-    backgroundColor: COLORS.primary,
-    borderRadius: 8,
+    borderRadius: BORDER_RADIUS.md,
+    overflow: "hidden",
+    ...SHADOWS.sm,
+    ...CLAY_BORDER.light,
+  },
+  buttonGradient: {
+    paddingHorizontal: SPACING.lg + 4,
+    paddingVertical: SPACING.sm + 4,
+    borderRadius: BORDER_RADIUS.md,
   },
   buttonText: {
-    color: "#fff",
+    color: COLORS.textOnPrimary,
     fontSize: FONT_SIZE.md,
-    fontWeight: "600",
+    fontWeight: "700",
   },
 });

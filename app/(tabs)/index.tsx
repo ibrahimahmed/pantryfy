@@ -1,156 +1,256 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { useQuery } from "convex/react";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { Container } from "@/components/ui/Container";
-import { IngredientInput } from "@/components/IngredientInput";
-import { SelectedIngredients } from "@/components/SelectedIngredients";
-import { useIngredientStore } from "@/store/ingredientStore";
-import { COLORS, SPACING, FONT_SIZE } from "@/constants/theme";
+import { api } from "@/convex/_generated/api";
+import { ImportBanner } from "@/components/ImportBanner";
+import { ImportTutorial } from "@/components/ImportTutorial";
+import { SaveRecipeSheet } from "@/components/SaveRecipeSheet";
+import { SavedRecipeCard } from "@/components/SavedRecipeCard";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { EmptyState } from "@/components/ui/EmptyState";
+import {
+  COLORS,
+  SPACING,
+  FONT_SIZE,
+  BORDER_RADIUS,
+  SHADOWS,
+  CLAY_BORDER,
+} from "@/constants/theme";
 
-export default function HomeScreen() {
+// Tab bar height (70) + bottom margin (10) + extra breathing room
+const TAB_BAR_HEIGHT = 90;
+
+export default function CookbooksScreen() {
   const router = useRouter();
-  const { selected, addIngredient, removeIngredient, clearAll } =
-    useIngredientStore();
+  const insets = useSafeAreaInsets();
+  const recipes = useQuery(api.recipes.getSavedRecipes);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(true);
 
-  const handleSearch = () => {
-    if (selected.length > 0) {
-      router.push("/recipes");
-    }
+  const handleImportPress = () => {
+    setSheetOpen(true);
   };
 
+  if (recipes === undefined) {
+    return <LoadingSpinner message="Loading your cookbooks..." />;
+  }
+
   return (
-    <Container safeArea={false}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.flex}
+    <View style={styles.container}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            paddingTop: insets.top + SPACING.md,
+            paddingBottom: TAB_BAR_HEIGHT + SPACING.md,
+          },
+        ]}
       >
-        <ScrollView
-          style={styles.flex}
-          contentContainerStyle={styles.content}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.heroSection}>
-            <LinearGradient
-              colors={["#E8F5E9", "#FAFAFA"]}
-              style={styles.heroBg}
-            />
-            <Text style={styles.heroEmoji}>{"\u{1F373}"}</Text>
-            <Text style={styles.heroTitle}>What's in your fridge?</Text>
-            <Text style={styles.heroSubtitle}>
-              Add ingredients and we'll find recipes you can make
+        {/* Header with subscription info */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.greeting}>PantryFy</Text>
+            <Text style={styles.subGreeting}>
+              {recipes.length} recipe{recipes.length !== 1 ? "s" : ""} saved
             </Text>
           </View>
-
-          <View style={styles.inputSection}>
-            <IngredientInput
-              onAdd={addIngredient}
-              selectedIds={selected.map((s) => s.id)}
-            />
-
-            <SelectedIngredients
-              ingredients={selected}
-              onRemove={removeIngredient}
-              onClearAll={clearAll}
-            />
+          <View style={styles.importCountBadge}>
+            <Ionicons name="cloud-download" size={14} color={COLORS.primary} />
+            <Text style={styles.importCountText}>5/5 free</Text>
           </View>
+        </View>
 
+        {/* Tutorial banner */}
+        <View style={styles.tutorialSection}>
+          <ImportTutorial
+            visible={showTutorial}
+            onDismiss={() => setShowTutorial(false)}
+          />
+        </View>
+
+        {/* Import banner */}
+        <View style={styles.importSection}>
+          <ImportBanner onPress={handleImportPress} />
+        </View>
+
+        {/* Cookbooks section */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Cookbooks</Text>
           <TouchableOpacity
-            style={[
-              styles.searchButton,
-              selected.length === 0 && styles.searchButtonDisabled,
-            ]}
-            onPress={handleSearch}
-            disabled={selected.length === 0}
-            activeOpacity={0.8}
+            onPress={() => router.push("/recipes")}
+            activeOpacity={0.7}
           >
-            <Ionicons name="search" size={20} color="#fff" />
-            <Text style={styles.searchButtonText}>Find Recipes</Text>
+            <Text style={styles.seeAll}>See all</Text>
           </TouchableOpacity>
+        </View>
 
-          {selected.length > 0 && (
-            <Text style={styles.hint}>
-              Tap "Find Recipes" to discover what you can cook
-            </Text>
-          )}
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </Container>
+        {recipes.length === 0 ? (
+          <EmptyState
+            icon="book-outline"
+            title="No recipes yet"
+            message="Import your first recipe from any website or social platform"
+            actionLabel="Import Recipe"
+            onAction={handleImportPress}
+          />
+        ) : (
+          <View style={styles.recipeList}>
+            {recipes.map((recipe) => (
+              <SavedRecipeCard key={recipe._id} recipe={recipe} />
+            ))}
+          </View>
+        )}
+
+        {/* Quick search card */}
+        <TouchableOpacity
+          style={styles.searchCard}
+          onPress={() => router.push("/recipes")}
+          activeOpacity={0.85}
+        >
+          <LinearGradient
+            colors={[COLORS.secondaryMuted, COLORS.surface]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.searchCardGradient}
+          >
+            <View style={styles.searchCardIcon}>
+              <Ionicons name="search" size={22} color={COLORS.secondary} />
+            </View>
+            <View style={styles.searchCardText}>
+              <Text style={styles.searchCardTitle}>
+                Search by ingredients
+              </Text>
+              <Text style={styles.searchCardSub}>
+                Tell us what's in your fridge
+              </Text>
+            </View>
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={COLORS.textLight}
+            />
+          </LinearGradient>
+        </TouchableOpacity>
+      </ScrollView>
+
+      <SaveRecipeSheet
+        visible={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: {
+  container: {
     flex: 1,
+    backgroundColor: COLORS.background,
   },
-  content: {
+  scrollContent: {
     paddingHorizontal: SPACING.md,
-    paddingBottom: SPACING.xl * 2,
   },
-  heroSection: {
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    paddingTop: SPACING.xl,
-    paddingBottom: SPACING.lg,
-    position: "relative",
+    marginBottom: SPACING.lg,
   },
-  heroBg: {
-    position: "absolute",
-    top: -100,
-    left: -50,
-    right: -50,
-    bottom: 0,
-  },
-  heroEmoji: {
-    fontSize: 56,
-    marginBottom: SPACING.md,
-  },
-  heroTitle: {
-    fontSize: FONT_SIZE.xxl,
+  greeting: {
+    fontSize: FONT_SIZE.xl,
     fontWeight: "800",
     color: COLORS.text,
-    textAlign: "center",
+    letterSpacing: -0.3,
   },
-  heroSubtitle: {
-    fontSize: FONT_SIZE.md,
+  subGreeting: {
+    fontSize: FONT_SIZE.sm,
     color: COLORS.textSecondary,
-    textAlign: "center",
-    marginTop: SPACING.sm,
-    lineHeight: 22,
+    marginTop: 2,
   },
-  inputSection: {
-    marginTop: SPACING.lg,
-  },
-  searchButton: {
+  importCountBadge: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    gap: SPACING.sm,
-    backgroundColor: COLORS.primary,
-    paddingVertical: SPACING.md,
-    borderRadius: 14,
-    marginTop: SPACING.lg,
+    gap: 4,
+    backgroundColor: COLORS.primaryMuted,
+    paddingHorizontal: SPACING.sm + 2,
+    paddingVertical: SPACING.xs + 2,
+    borderRadius: BORDER_RADIUS.full,
+    ...SHADOWS.sm,
+    ...CLAY_BORDER.subtle,
   },
-  searchButtonDisabled: {
-    backgroundColor: COLORS.border,
+  importCountText: {
+    fontSize: FONT_SIZE.xs,
+    fontWeight: "700",
+    color: COLORS.primary,
   },
-  searchButtonText: {
-    color: "#fff",
+  tutorialSection: {
+    marginBottom: SPACING.md,
+  },
+  importSection: {
+    marginBottom: SPACING.xl,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: SPACING.md,
+  },
+  sectionTitle: {
     fontSize: FONT_SIZE.lg,
     fontWeight: "700",
+    color: COLORS.text,
   },
-  hint: {
-    textAlign: "center",
-    color: COLORS.textLight,
+  seeAll: {
     fontSize: FONT_SIZE.sm,
-    marginTop: SPACING.md,
+    fontWeight: "600",
+    color: COLORS.primary,
+  },
+  recipeList: {
+    gap: SPACING.sm,
+    marginBottom: SPACING.xl,
+  },
+  searchCard: {
+    borderRadius: BORDER_RADIUS.xl,
+    overflow: "hidden",
+    ...SHADOWS.md,
+    ...CLAY_BORDER.medium,
+  },
+  searchCardGradient: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: SPACING.md,
+    borderRadius: BORDER_RADIUS.xl,
+  },
+  searchCardIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.surfaceElevated,
+    alignItems: "center",
+    justifyContent: "center",
+    ...SHADOWS.sm,
+  },
+  searchCardText: {
+    flex: 1,
+    marginLeft: SPACING.md,
+  },
+  searchCardTitle: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: "700",
+    color: COLORS.text,
+  },
+  searchCardSub: {
+    fontSize: FONT_SIZE.xs,
+    color: COLORS.textSecondary,
+    marginTop: 2,
   },
 });

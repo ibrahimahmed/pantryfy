@@ -1,10 +1,25 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Modal, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Modal,
+  ScrollView,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useFilterStore } from "@/store/filterStore";
 import { ChipGroup } from "./ui/ChipGroup";
 import { TIME_OPTIONS, CUISINE_OPTIONS, DIET_OPTIONS } from "@/constants/filters";
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS } from "@/constants/theme";
+import {
+  COLORS,
+  SPACING,
+  FONT_SIZE,
+  BORDER_RADIUS,
+  SHADOWS,
+  CLAY_BORDER,
+} from "@/constants/theme";
 
 export function FilterButton() {
   const [visible, setVisible] = useState(false);
@@ -26,8 +41,11 @@ export function FilterButton() {
       <TouchableOpacity
         style={styles.button}
         onPress={() => setVisible(true)}
+        activeOpacity={0.7}
       >
-        <Ionicons name="options-outline" size={18} color={COLORS.text} />
+        <View style={styles.buttonIconContainer}>
+          <Ionicons name="options-outline" size={16} color={COLORS.primary} />
+        </View>
         <Text style={styles.buttonText}>
           Filters{activeCount > 0 ? ` (${activeCount})` : ""}
         </Text>
@@ -43,8 +61,11 @@ export function FilterButton() {
         <View style={styles.modal}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Filters</Text>
-            <TouchableOpacity onPress={() => setVisible(false)}>
-              <Ionicons name="close" size={24} color={COLORS.text} />
+            <TouchableOpacity
+              onPress={() => setVisible(false)}
+              style={styles.closeButton}
+            >
+              <Ionicons name="close" size={22} color={COLORS.text} />
             </TouchableOpacity>
           </View>
 
@@ -83,8 +104,16 @@ export function FilterButton() {
             <TouchableOpacity
               style={styles.applyButton}
               onPress={() => setVisible(false)}
+              activeOpacity={0.8}
             >
-              <Text style={styles.applyText}>Apply</Text>
+              <LinearGradient
+                colors={[COLORS.primary, COLORS.primaryDark]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.applyGradient}
+              >
+                <Text style={styles.applyText}>Apply</Text>
+              </LinearGradient>
             </TouchableOpacity>
           </View>
         </View>
@@ -97,15 +126,28 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: "row",
     alignItems: "center",
-    gap: SPACING.xs,
+    gap: SPACING.sm,
     paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
+    paddingVertical: SPACING.sm + 2,
     marginHorizontal: SPACING.md,
     marginTop: SPACING.sm,
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.md,
+    alignSelf: "flex-start",
+    ...SHADOWS.sm,
+    ...CLAY_BORDER.subtle,
+  },
+  buttonIconContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: 10,
+    backgroundColor: COLORS.primaryMuted,
+    alignItems: "center",
+    justifyContent: "center",
   },
   buttonText: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: "600",
+    fontWeight: "700",
     color: COLORS.text,
   },
   dot: {
@@ -124,32 +166,44 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.md,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.divider,
+    backgroundColor: COLORS.surface,
+    borderBottomLeftRadius: BORDER_RADIUS.lg,
+    borderBottomRightRadius: BORDER_RADIUS.lg,
+    ...SHADOWS.sm,
   },
   modalTitle: {
     fontSize: FONT_SIZE.xl,
-    fontWeight: "700",
+    fontWeight: "800",
     color: COLORS.text,
+  },
+  closeButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: COLORS.background,
+    alignItems: "center",
+    justifyContent: "center",
+    ...SHADOWS.sm,
+    ...CLAY_BORDER.subtle,
   },
   modalContent: {
     flex: 1,
     padding: SPACING.md,
+    paddingTop: SPACING.lg,
   },
   modalFooter: {
     flexDirection: "row",
     gap: SPACING.sm,
     padding: SPACING.md,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.divider,
   },
   clearButton: {
     flex: 1,
     paddingVertical: SPACING.sm + 4,
     borderRadius: BORDER_RADIUS.md,
-    borderWidth: 1.5,
-    borderColor: COLORS.border,
+    backgroundColor: COLORS.surface,
     alignItems: "center",
+    ...SHADOWS.sm,
+    ...CLAY_BORDER.subtle,
   },
   clearText: {
     fontSize: FONT_SIZE.md,
@@ -158,14 +212,19 @@ const styles = StyleSheet.create({
   },
   applyButton: {
     flex: 1,
+    borderRadius: BORDER_RADIUS.md,
+    overflow: "hidden",
+    ...SHADOWS.md,
+    ...CLAY_BORDER.light,
+  },
+  applyGradient: {
     paddingVertical: SPACING.sm + 4,
     borderRadius: BORDER_RADIUS.md,
-    backgroundColor: COLORS.primary,
     alignItems: "center",
   },
   applyText: {
     fontSize: FONT_SIZE.md,
-    fontWeight: "600",
-    color: "#fff",
+    fontWeight: "700",
+    color: COLORS.textOnPrimary,
   },
 });

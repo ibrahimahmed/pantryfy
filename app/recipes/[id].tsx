@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  ScrollView,
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
-} from "react-native";
+import { ScrollView, View, Text, StyleSheet, Dimensions } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,7 +9,14 @@ import { SaveRecipeButton } from "@/components/SaveRecipeButton";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { Badge } from "@/components/ui/Badge";
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS } from "@/constants/theme";
+import {
+  COLORS,
+  SPACING,
+  FONT_SIZE,
+  BORDER_RADIUS,
+  SHADOWS,
+  CLAY_BORDER,
+} from "@/constants/theme";
 
 const { width } = Dimensions.get("window");
 
@@ -55,12 +56,15 @@ export default function RecipeDetailScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <Image
-        source={{ uri: recipe.image }}
-        style={styles.heroImage}
-        contentFit="cover"
-        transition={300}
-      />
+      {/* Hero Image */}
+      <View style={styles.imageContainer}>
+        <Image
+          source={{ uri: recipe.image }}
+          style={styles.heroImage}
+          contentFit="cover"
+          transition={300}
+        />
+      </View>
 
       <View style={styles.body}>
         <Text style={styles.title}>{recipe.title}</Text>
@@ -68,34 +72,52 @@ export default function RecipeDetailScreen() {
         {/* Meta Row */}
         <View style={styles.metaRow}>
           <View style={styles.metaItem}>
-            <Ionicons name="time-outline" size={18} color={COLORS.textSecondary} />
+            <View style={styles.metaIconContainer}>
+              <Ionicons
+                name="time-outline"
+                size={16}
+                color={COLORS.primary}
+              />
+            </View>
             <Text style={styles.metaText}>{recipe.readyInMinutes} min</Text>
           </View>
-          <View style={styles.metaDivider} />
           <View style={styles.metaItem}>
-            <Ionicons name="people-outline" size={18} color={COLORS.textSecondary} />
+            <View style={styles.metaIconContainer}>
+              <Ionicons
+                name="people-outline"
+                size={16}
+                color={COLORS.primary}
+              />
+            </View>
             <Text style={styles.metaText}>{recipe.servings} servings</Text>
           </View>
           {calories && (
-            <>
-              <View style={styles.metaDivider} />
-              <View style={styles.metaItem}>
-                <Ionicons name="flame-outline" size={18} color={COLORS.textSecondary} />
-                <Text style={styles.metaText}>
-                  {Math.round(calories.amount)} cal
-                </Text>
+            <View style={styles.metaItem}>
+              <View style={styles.metaIconContainer}>
+                <Ionicons
+                  name="flame-outline"
+                  size={16}
+                  color={COLORS.secondary}
+                />
               </View>
-            </>
+              <Text style={styles.metaText}>
+                {Math.round(calories.amount)} cal
+              </Text>
+            </View>
           )}
           {protein && (
-            <>
-              <View style={styles.metaDivider} />
-              <View style={styles.metaItem}>
-                <Text style={styles.metaText}>
-                  {Math.round(protein.amount)}g protein
-                </Text>
+            <View style={styles.metaItem}>
+              <View style={styles.metaIconContainer}>
+                <Ionicons
+                  name="fitness-outline"
+                  size={16}
+                  color={COLORS.success}
+                />
               </View>
-            </>
+              <Text style={styles.metaText}>
+                {Math.round(protein.amount)}g protein
+              </Text>
+            </View>
           )}
         </View>
 
@@ -116,8 +138,11 @@ export default function RecipeDetailScreen() {
         )}
 
         {/* Ingredients */}
-        <Text style={styles.sectionTitle}>Ingredients</Text>
-        <View style={styles.ingredientsList}>
+        <View style={styles.sectionHeaderRow}>
+          <Ionicons name="restaurant-outline" size={18} color={COLORS.primary} />
+          <Text style={styles.sectionTitle}>Ingredients</Text>
+        </View>
+        <View style={styles.ingredientsCard}>
           {recipe.extendedIngredients.map((ing, idx) => (
             <View key={`${ing.id}-${idx}`} style={styles.ingredientRow}>
               <View style={styles.bullet} />
@@ -129,13 +154,22 @@ export default function RecipeDetailScreen() {
         {/* Instructions */}
         {recipe.analyzedInstructions?.[0]?.steps && (
           <>
-            <Text style={styles.sectionTitle}>Instructions</Text>
+            <View style={styles.sectionHeaderRow}>
+              <Ionicons
+                name="list-outline"
+                size={18}
+                color={COLORS.secondary}
+              />
+              <Text style={styles.sectionTitle}>Instructions</Text>
+            </View>
             {recipe.analyzedInstructions[0].steps.map((step) => (
               <View key={step.number} style={styles.stepRow}>
                 <View style={styles.stepNumber}>
                   <Text style={styles.stepNumberText}>{step.number}</Text>
                 </View>
-                <Text style={styles.stepText}>{step.step}</Text>
+                <View style={styles.stepContent}>
+                  <Text style={styles.stepText}>{step.step}</Text>
+                </View>
               </View>
             ))}
           </>
@@ -154,11 +188,19 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   content: {
-    paddingBottom: SPACING.xl * 2,
+    paddingBottom: SPACING.xl * 3,
+  },
+  imageContainer: {
+    marginHorizontal: SPACING.md,
+    marginTop: SPACING.sm,
+    borderRadius: BORDER_RADIUS.xl,
+    overflow: "hidden",
+    ...SHADOWS.lg,
+    ...CLAY_BORDER.medium,
   },
   heroImage: {
-    width,
-    height: width * 0.65,
+    width: "100%",
+    height: width * 0.6,
   },
   body: {
     padding: SPACING.md,
@@ -168,28 +210,39 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: COLORS.text,
     lineHeight: 32,
+    letterSpacing: -0.3,
+    marginTop: SPACING.sm,
   },
   metaRow: {
     flexDirection: "row",
     alignItems: "center",
     marginTop: SPACING.md,
     flexWrap: "wrap",
+    gap: SPACING.sm,
   },
   metaItem: {
     flexDirection: "row",
     alignItems: "center",
     gap: SPACING.xs,
+    backgroundColor: COLORS.surface,
+    paddingHorizontal: SPACING.sm + 2,
+    paddingVertical: SPACING.xs + 2,
+    borderRadius: BORDER_RADIUS.sm,
+    ...SHADOWS.sm,
+    ...CLAY_BORDER.subtle,
   },
-  metaDivider: {
-    width: 1,
-    height: 16,
-    backgroundColor: COLORS.border,
-    marginHorizontal: SPACING.sm,
+  metaIconContainer: {
+    width: 24,
+    height: 24,
+    borderRadius: 8,
+    backgroundColor: COLORS.background,
+    alignItems: "center",
+    justifyContent: "center",
   },
   metaText: {
     fontSize: FONT_SIZE.sm,
     color: COLORS.textSecondary,
-    fontWeight: "500",
+    fontWeight: "600",
   },
   tags: {
     flexDirection: "row",
@@ -197,15 +250,25 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
     marginTop: SPACING.md,
   },
-  sectionTitle: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: "700",
-    color: COLORS.text,
-    marginTop: SPACING.lg,
+  sectionHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: SPACING.sm,
+    marginTop: SPACING.lg + 4,
     marginBottom: SPACING.md,
   },
-  ingredientsList: {
-    gap: SPACING.sm,
+  sectionTitle: {
+    fontSize: FONT_SIZE.lg,
+    fontWeight: "800",
+    color: COLORS.text,
+  },
+  ingredientsCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.md,
+    gap: SPACING.sm + 2,
+    ...SHADOWS.md,
+    ...CLAY_BORDER.medium,
   },
   ingredientRow: {
     flexDirection: "row",
@@ -213,11 +276,11 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   bullet: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: COLORS.primary,
-    marginTop: 8,
+    marginTop: 7,
   },
   ingredientText: {
     flex: 1,
@@ -229,20 +292,27 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: SPACING.sm,
     marginBottom: SPACING.md,
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.md,
+    ...SHADOWS.sm,
+    ...CLAY_BORDER.light,
   },
   stepNumber: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: COLORS.primary,
+    width: 32,
+    height: 32,
+    borderRadius: 12,
+    backgroundColor: COLORS.primaryMuted,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 2,
   },
   stepNumberText: {
-    color: "#fff",
+    color: COLORS.primary,
     fontSize: FONT_SIZE.sm,
-    fontWeight: "700",
+    fontWeight: "800",
+  },
+  stepContent: {
+    flex: 1,
   },
   stepText: {
     flex: 1,

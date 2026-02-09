@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { RecipeMatch } from "@/types/recipe";
@@ -15,6 +10,7 @@ import {
   FONT_SIZE,
   BORDER_RADIUS,
   SHADOWS,
+  CLAY_BORDER,
 } from "@/constants/theme";
 
 interface RecipeCardProps {
@@ -35,12 +31,14 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
       onPress={() => router.push(`/recipes/${recipe.id}`)}
       activeOpacity={0.7}
     >
-      <Image
-        source={{ uri: recipe.image }}
-        style={styles.image}
-        contentFit="cover"
-        transition={200}
-      />
+      <View style={styles.imageContainer}>
+        <Image
+          source={{ uri: recipe.image }}
+          style={styles.image}
+          contentFit="cover"
+          transition={200}
+        />
+      </View>
       <View style={styles.content}>
         <Text style={styles.title} numberOfLines={2}>
           {recipe.title}
@@ -53,7 +51,9 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
               Missing {recipe.missedIngredientCount}
             </Badge>
           )}
-          <Text style={styles.matchText}>{matchPercent}% match</Text>
+          <View style={styles.matchPill}>
+            <Text style={styles.matchText}>{matchPercent}%</Text>
+          </View>
         </View>
         {recipe.missedIngredients.length > 0 && (
           <Text style={styles.missingText} numberOfLines={1}>
@@ -69,23 +69,29 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
     backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.md,
-    marginBottom: SPACING.sm,
+    borderRadius: BORDER_RADIUS.lg,
+    marginBottom: SPACING.sm + 2,
     overflow: "hidden",
-    ...SHADOWS.sm,
+    ...SHADOWS.md,
+    ...CLAY_BORDER.medium,
+  },
+  imageContainer: {
+    width: 115,
+    height: 115,
+    overflow: "hidden",
   },
   image: {
-    width: 110,
-    height: 110,
+    width: 115,
+    height: 115,
   },
   content: {
     flex: 1,
-    padding: SPACING.sm + 2,
+    padding: SPACING.sm + 4,
     justifyContent: "space-between",
   },
   title: {
     fontSize: FONT_SIZE.md,
-    fontWeight: "600",
+    fontWeight: "700",
     color: COLORS.text,
     lineHeight: 21,
   },
@@ -93,12 +99,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: SPACING.sm,
-    marginTop: SPACING.xs,
+    marginTop: SPACING.xs + 2,
+  },
+  matchPill: {
+    backgroundColor: COLORS.primaryMuted,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 2,
+    borderRadius: BORDER_RADIUS.full,
   },
   matchText: {
     fontSize: FONT_SIZE.xs,
-    color: COLORS.textSecondary,
-    fontWeight: "500",
+    color: COLORS.primary,
+    fontWeight: "700",
   },
   missingText: {
     fontSize: FONT_SIZE.xs,

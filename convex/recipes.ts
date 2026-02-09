@@ -23,6 +23,8 @@ export const saveRecipe = mutation({
     servings: v.number(),
   },
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    const userId = identity?.subject ?? "anonymous";
     return await ctx.db.insert("savedRecipes", {
       title: args.title,
       source: args.source,
@@ -31,14 +33,19 @@ export const saveRecipe = mutation({
       imageUrl: args.imageUrl ?? undefined,
       ingredients: args.ingredients,
       servings: args.servings,
-      userId: "default_user",
+      userId,
     });
   },
 });
 
 export const getSavedRecipes = query({
   handler: async (ctx) => {
-    return await ctx.db.query("savedRecipes").collect();
+    const identity = await ctx.auth.getUserIdentity();
+    const userId = identity?.subject ?? "anonymous";
+    return await ctx.db
+      .query("savedRecipes")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
   },
 });
 
@@ -59,7 +66,12 @@ export const deleteRecipe = mutation({
 export const isRecipeSaved = query({
   args: { spoonacularId: v.number() },
   handler: async (ctx, args) => {
-    const recipes = await ctx.db.query("savedRecipes").collect();
+    const identity = await ctx.auth.getUserIdentity();
+    const userId = identity?.subject ?? "anonymous";
+    const recipes = await ctx.db
+      .query("savedRecipes")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
     return recipes.some((r) => r.spoonacularId === args.spoonacularId);
   },
 });

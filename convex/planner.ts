@@ -4,7 +4,12 @@ import { v } from "convex/values";
 export const getMealPlan = query({
   args: { startDate: v.string(), endDate: v.string() },
   handler: async (ctx, args) => {
-    const plans = await ctx.db.query("mealPlans").collect();
+    const identity = await ctx.auth.getUserIdentity();
+    const userId = identity?.subject ?? "anonymous";
+    const plans = await ctx.db
+      .query("mealPlans")
+      .withIndex("by_user_date", (q) => q.eq("userId", userId))
+      .collect();
     return plans.filter(
       (p) => p.date >= args.startDate && p.date <= args.endDate
     );
@@ -22,16 +27,21 @@ export const setMealPlan = mutation({
     recipeId: v.id("savedRecipes"),
   },
   handler: async (ctx, args) => {
-    const existing = await ctx.db.query("mealPlans").collect();
-    const match = existing.find(
-      (p) => p.date === args.date && p.mealType === args.mealType
-    );
+    const identity = await ctx.auth.getUserIdentity();
+    const userId = identity?.subject ?? "anonymous";
+    const existing = await ctx.db
+      .query("mealPlans")
+      .withIndex("by_user_date", (q) =>
+        q.eq("userId", userId).eq("date", args.date)
+      )
+      .collect();
+    const match = existing.find((p) => p.mealType === args.mealType);
 
     if (match) {
       await ctx.db.patch(match._id, { recipeId: args.recipeId });
     } else {
       await ctx.db.insert("mealPlans", {
-        userId: "default_user",
+        userId,
         date: args.date,
         mealType: args.mealType,
         recipeId: args.recipeId,

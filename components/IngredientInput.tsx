@@ -8,7 +8,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS, SHADOWS } from "@/constants/theme";
+import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS, SHADOWS, CLAY_BORDER } from "@/constants/theme";
 import { Ingredient } from "@/types";
 import ingredientsData from "@/data/ingredients.json";
 
@@ -50,12 +50,13 @@ export function IngredientInput({ onAdd, selectedIds }: IngredientInputProps) {
   return (
     <View style={styles.container}>
       <View style={styles.inputContainer}>
-        <Ionicons
-          name="add-circle-outline"
-          size={22}
-          color={COLORS.textSecondary}
-          style={styles.inputIcon}
-        />
+        <View style={styles.inputIconContainer}>
+          <Ionicons
+            name="add-circle-outline"
+            size={20}
+            color={COLORS.primary}
+          />
+        </View>
         <TextInput
           style={styles.input}
           value={query}
@@ -67,8 +68,15 @@ export function IngredientInput({ onAdd, selectedIds }: IngredientInputProps) {
           autoCorrect={false}
         />
         {query.length > 0 && (
-          <TouchableOpacity onPress={() => setQuery("")} style={styles.clearBtn}>
-            <Ionicons name="close-circle" size={20} color={COLORS.textLight} />
+          <TouchableOpacity
+            onPress={() => setQuery("")}
+            style={styles.clearBtn}
+          >
+            <Ionicons
+              name="close-circle"
+              size={20}
+              color={COLORS.textLight}
+            />
           </TouchableOpacity>
         )}
       </View>
@@ -85,7 +93,9 @@ export function IngredientInput({ onAdd, selectedIds }: IngredientInputProps) {
                 onPress={() => handleSelect(item)}
               >
                 <Text style={styles.suggestionText}>{item.name}</Text>
-                <Text style={styles.suggestionCategory}>{item.category}</Text>
+                <View style={styles.categoryPill}>
+                  <Text style={styles.suggestionCategory}>{item.category}</Text>
+                </View>
               </TouchableOpacity>
             )}
           />
@@ -103,46 +113,63 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.md,
-    borderWidth: 1.5,
-    borderColor: COLORS.border,
-    paddingHorizontal: SPACING.sm,
+    borderRadius: BORDER_RADIUS.lg,
+    paddingHorizontal: SPACING.sm + 2,
+    ...SHADOWS.md,
+    ...CLAY_BORDER.medium,
   },
-  inputIcon: {
+  inputIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: COLORS.primaryMuted,
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: SPACING.sm,
   },
   input: {
     flex: 1,
-    paddingVertical: SPACING.sm + 4,
+    paddingVertical: SPACING.md,
     fontSize: FONT_SIZE.md,
     color: COLORS.text,
+    fontWeight: "500",
   },
   clearBtn: {
     padding: SPACING.xs,
   },
   suggestionsContainer: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.md,
-    marginTop: SPACING.xs,
-    maxHeight: 240,
-    ...SHADOWS.md,
+    backgroundColor: COLORS.surfaceElevated,
+    borderRadius: BORDER_RADIUS.lg,
+    marginTop: SPACING.sm,
+    maxHeight: 260,
+    overflow: "hidden",
+    ...SHADOWS.lg,
+    ...CLAY_BORDER.medium,
   },
   suggestionItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm + 2,
+    paddingVertical: SPACING.sm + 4,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.divider,
+    borderBottomColor: COLORS.borderLight,
   },
   suggestionText: {
     fontSize: FONT_SIZE.md,
     color: COLORS.text,
+    fontWeight: "500",
+  },
+  categoryPill: {
+    backgroundColor: COLORS.background,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 2,
+    borderRadius: BORDER_RADIUS.full,
   },
   suggestionCategory: {
     fontSize: FONT_SIZE.xs,
     color: COLORS.textLight,
     textTransform: "capitalize",
+    fontWeight: "500",
   },
 });

@@ -11,13 +11,23 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "convex/react";
 import * as Clipboard from "expo-clipboard";
 import { useGroceryStore } from "@/store/groceryStore";
-import { aggregateGroceryList, groupByCategory } from "@/lib/groceryAggregator";
+import {
+  aggregateGroceryList,
+  groupByCategory,
+} from "@/lib/groceryAggregator";
 import { RecipeSelector } from "@/components/RecipeSelector";
 import { GroceryListItem } from "@/components/GroceryListItem";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { GROCERY_CATEGORIES } from "@/constants/categories";
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS } from "@/constants/theme";
+import {
+  COLORS,
+  SPACING,
+  FONT_SIZE,
+  BORDER_RADIUS,
+  SHADOWS,
+  CLAY_BORDER,
+} from "@/constants/theme";
 import { api } from "@/convex/_generated/api";
 
 export default function GroceryScreen() {
@@ -84,9 +94,11 @@ export default function GroceryScreen() {
           {groceryList.length > 0 ? (
             <>
               <View style={styles.listHeader}>
-                <Text style={styles.progressText}>
-                  {checkedCount}/{totalCount} items
-                </Text>
+                <View style={styles.progressPill}>
+                  <Text style={styles.progressText}>
+                    {checkedCount}/{totalCount} items
+                  </Text>
+                </View>
                 <View style={styles.listActions}>
                   <TouchableOpacity onPress={handleCopy} style={styles.action}>
                     <Ionicons
@@ -121,14 +133,24 @@ export default function GroceryScreen() {
                 renderSectionHeader={({ section }) => (
                   <View style={styles.sectionHeader}>
                     <Text style={styles.sectionEmoji}>
-                      {GROCERY_CATEGORIES[section.title as keyof typeof GROCERY_CATEGORIES]?.emoji}
+                      {
+                        GROCERY_CATEGORIES[
+                          section.title as keyof typeof GROCERY_CATEGORIES
+                        ]?.emoji
+                      }
                     </Text>
                     <Text style={styles.sectionTitle}>
-                      {GROCERY_CATEGORIES[section.title as keyof typeof GROCERY_CATEGORIES]?.label}
+                      {
+                        GROCERY_CATEGORIES[
+                          section.title as keyof typeof GROCERY_CATEGORIES
+                        ]?.label
+                      }
                     </Text>
-                    <Text style={styles.sectionCount}>
-                      {section.data.length}
-                    </Text>
+                    <View style={styles.sectionCountPill}>
+                      <Text style={styles.sectionCount}>
+                        {section.data.length}
+                      </Text>
+                    </View>
                   </View>
                 )}
                 renderItem={({ item }) => (
@@ -145,6 +167,13 @@ export default function GroceryScreen() {
             </>
           ) : (
             <View style={styles.emptyList}>
+              <View style={styles.emptyIcon}>
+                <Ionicons
+                  name="list-outline"
+                  size={40}
+                  color={COLORS.textLight}
+                />
+              </View>
               <Text style={styles.emptyText}>
                 Select recipes above and tap "Generate List"
               </Text>
@@ -166,15 +195,24 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
+    paddingVertical: SPACING.sm + 2,
     backgroundColor: COLORS.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.divider,
+    marginHorizontal: SPACING.md,
+    marginTop: SPACING.sm,
+    borderRadius: BORDER_RADIUS.md,
+    ...SHADOWS.sm,
+    ...CLAY_BORDER.subtle,
+  },
+  progressPill: {
+    backgroundColor: COLORS.primaryMuted,
+    paddingHorizontal: SPACING.sm + 2,
+    paddingVertical: SPACING.xs,
+    borderRadius: BORDER_RADIUS.full,
   },
   progressText: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: "600",
-    color: COLORS.textSecondary,
+    fontWeight: "700",
+    color: COLORS.primary,
   },
   listActions: {
     flexDirection: "row",
@@ -191,19 +229,18 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
   },
   list: {
-    paddingBottom: SPACING.xl * 2,
+    paddingBottom: SPACING.xl * 4,
   },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
     gap: SPACING.sm,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    backgroundColor: COLORS.background,
-    marginTop: SPACING.xs,
+    paddingHorizontal: SPACING.md + 4,
+    paddingVertical: SPACING.sm + 2,
+    marginTop: SPACING.sm,
   },
   sectionEmoji: {
-    fontSize: 18,
+    fontSize: 20,
   },
   sectionTitle: {
     fontSize: FONT_SIZE.md,
@@ -211,10 +248,17 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     flex: 1,
   },
+  sectionCountPill: {
+    backgroundColor: COLORS.surface,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 2,
+    borderRadius: BORDER_RADIUS.full,
+    ...SHADOWS.sm,
+  },
   sectionCount: {
     fontSize: FONT_SIZE.xs,
-    color: COLORS.textLight,
-    fontWeight: "500",
+    color: COLORS.textSecondary,
+    fontWeight: "600",
   },
   emptyList: {
     flex: 1,
@@ -222,9 +266,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: SPACING.xl,
   },
+  emptyIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: BORDER_RADIUS.xl,
+    backgroundColor: COLORS.surface,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: SPACING.md,
+    ...SHADOWS.md,
+    ...CLAY_BORDER.medium,
+  },
   emptyText: {
     fontSize: FONT_SIZE.md,
     color: COLORS.textSecondary,
     textAlign: "center",
+    lineHeight: 22,
   },
 });

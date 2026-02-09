@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, SectionList, StyleSheet } from "react-native";
 import { RecipeMatch } from "@/types/recipe";
 import { RecipeCard } from "./RecipeCard";
-import { COLORS, SPACING, FONT_SIZE } from "@/constants/theme";
+import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS, SHADOWS, CLAY_BORDER } from "@/constants/theme";
 
 interface RecipeListProps {
   results: {
@@ -20,7 +20,11 @@ export function RecipeList({ results }: RecipeListProps) {
       data: results.almostThere,
       emoji: "\u{1F449}",
     },
-    { title: "Need More Ingredients", data: results.needMore, emoji: "\u{1F6D2}" },
+    {
+      title: "Need More Ingredients",
+      data: results.needMore,
+      emoji: "\u{1F6D2}",
+    },
   ].filter((s) => s.data.length > 0);
 
   if (sections.length === 0) {
@@ -39,10 +43,13 @@ export function RecipeList({ results }: RecipeListProps) {
       keyExtractor={(item) => String(item.id)}
       renderSectionHeader={({ section }) => (
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>
-            {section.emoji} {section.title}
-          </Text>
-          <Text style={styles.sectionCount}>{section.data.length}</Text>
+          <View style={styles.sectionLeft}>
+            <Text style={styles.sectionEmoji}>{section.emoji}</Text>
+            <Text style={styles.sectionTitle}>{section.title}</Text>
+          </View>
+          <View style={styles.sectionCountPill}>
+            <Text style={styles.sectionCount}>{section.data.length}</Text>
+          </View>
         </View>
       )}
       renderItem={({ item }) => <RecipeCard recipe={item} />}
@@ -56,25 +63,41 @@ export function RecipeList({ results }: RecipeListProps) {
 const styles = StyleSheet.create({
   list: {
     paddingHorizontal: SPACING.md,
-    paddingBottom: SPACING.xl,
+    paddingBottom: SPACING.xl * 2,
   },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: SPACING.sm,
+    paddingVertical: SPACING.sm + 2,
     marginTop: SPACING.md,
-    marginBottom: SPACING.xs,
+    marginBottom: SPACING.xs + 2,
+  },
+  sectionLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: SPACING.sm,
+  },
+  sectionEmoji: {
+    fontSize: 20,
   },
   sectionTitle: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: "700",
+    fontWeight: "800",
     color: COLORS.text,
+  },
+  sectionCountPill: {
+    backgroundColor: COLORS.surface,
+    paddingHorizontal: SPACING.sm + 2,
+    paddingVertical: SPACING.xs,
+    borderRadius: BORDER_RADIUS.full,
+    ...SHADOWS.sm,
+    ...CLAY_BORDER.subtle,
   },
   sectionCount: {
     fontSize: FONT_SIZE.sm,
     color: COLORS.textSecondary,
-    fontWeight: "500",
+    fontWeight: "700",
   },
   emptyContainer: {
     flex: 1,

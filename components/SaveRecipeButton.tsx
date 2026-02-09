@@ -1,11 +1,19 @@
 import React, { useState } from "react";
-import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import { TouchableOpacity, Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { RecipeDetail } from "@/types/recipe";
 import * as Haptics from "expo-haptics";
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS } from "@/constants/theme";
+import {
+  COLORS,
+  SPACING,
+  FONT_SIZE,
+  BORDER_RADIUS,
+  SHADOWS,
+  CLAY_BORDER,
+} from "@/constants/theme";
 
 interface SaveRecipeButtonProps {
   recipe: RecipeDetail;
@@ -43,47 +51,75 @@ export function SaveRecipeButton({ recipe }: SaveRecipeButtonProps) {
     }
   };
 
+  if (saved) {
+    return (
+      <View style={styles.savedButton}>
+        <Ionicons name="checkmark-circle" size={22} color={COLORS.success} />
+        <Text style={styles.savedText}>Saved</Text>
+      </View>
+    );
+  }
+
   return (
     <TouchableOpacity
-      style={[styles.button, saved && styles.savedButton]}
+      style={styles.button}
       onPress={handleSave}
-      disabled={saved || saving}
+      disabled={saving}
       activeOpacity={0.8}
     >
-      <Ionicons
-        name={saved ? "checkmark-circle" : "bookmark-outline"}
-        size={20}
-        color={saved ? COLORS.primary : "#fff"}
-      />
-      <Text style={[styles.text, saved && styles.savedText]}>
-        {saving ? "Saving..." : saved ? "Saved" : "Save Recipe"}
-      </Text>
+      <LinearGradient
+        colors={[COLORS.primary, COLORS.primaryDark]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.gradient}
+      >
+        <Ionicons name="bookmark-outline" size={20} color={COLORS.textOnPrimary} />
+        <Text style={styles.text}>
+          {saving ? "Saving..." : "Save Recipe"}
+        </Text>
+      </LinearGradient>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
+    marginTop: SPACING.lg,
+    borderRadius: BORDER_RADIUS.lg,
+    overflow: "hidden",
+    ...SHADOWS.md,
+    ...CLAY_BORDER.medium,
+  },
+  gradient: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: SPACING.sm,
-    backgroundColor: COLORS.primary,
-    paddingVertical: SPACING.md,
-    borderRadius: BORDER_RADIUS.md,
-    marginTop: SPACING.lg,
-  },
-  savedButton: {
-    backgroundColor: "#E8F5E9",
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
+    paddingVertical: SPACING.md + 2,
+    borderRadius: BORDER_RADIUS.lg,
   },
   text: {
-    color: "#fff",
+    color: COLORS.textOnPrimary,
     fontSize: FONT_SIZE.md,
     fontWeight: "700",
   },
+  savedButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: SPACING.sm,
+    marginTop: SPACING.lg,
+    paddingVertical: SPACING.md,
+    borderRadius: BORDER_RADIUS.lg,
+    backgroundColor: COLORS.successMuted,
+    ...SHADOWS.sm,
+    borderWidth: 1.5,
+    borderColor: "rgba(255,255,255,0.5)",
+    borderTopColor: "rgba(255,255,255,0.7)",
+  },
   savedText: {
-    color: COLORS.primary,
+    color: COLORS.success,
+    fontSize: FONT_SIZE.md,
+    fontWeight: "700",
   },
 });

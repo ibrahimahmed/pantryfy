@@ -1,6 +1,12 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS } from "@/constants/theme";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+} from "react-native";
+import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS, SHADOWS, CLAY_BORDER } from "@/constants/theme";
 
 interface ChipGroupProps<T> {
   options: readonly { label: string; value: T }[] | readonly string[];
@@ -35,6 +41,7 @@ export function ChipGroup<T extends string | number | null>({
                 key={index}
                 style={[styles.chip, isSelected && styles.chipSelected]}
                 onPress={() => onSelect(isSelected ? null : optValue)}
+                activeOpacity={0.7}
               >
                 <Text
                   style={[
@@ -59,9 +66,10 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: "600",
+    fontWeight: "700",
     color: COLORS.text,
     marginBottom: SPACING.sm,
+    letterSpacing: 0.3,
   },
   chips: {
     flexDirection: "row",
@@ -70,22 +78,25 @@ const styles = StyleSheet.create({
   },
   chip: {
     paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
+    paddingVertical: SPACING.sm + 2,
     borderRadius: BORDER_RADIUS.full,
-    borderWidth: 1.5,
-    borderColor: COLORS.border,
     backgroundColor: COLORS.surface,
+    ...SHADOWS.sm,
+    ...CLAY_BORDER.subtle,
   },
   chipSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: "#E8F5E9",
+    backgroundColor: COLORS.primaryMuted,
+    borderColor: COLORS.primaryLight,
+    borderTopColor: "rgba(255,255,255,0.7)",
+    borderLeftColor: "rgba(255,255,255,0.6)",
   },
   chipText: {
     fontSize: FONT_SIZE.sm,
     color: COLORS.textSecondary,
+    fontWeight: "500",
   },
   chipTextSelected: {
-    color: COLORS.primary,
-    fontWeight: "600",
+    color: COLORS.primaryDark,
+    fontWeight: "700",
   },
 });

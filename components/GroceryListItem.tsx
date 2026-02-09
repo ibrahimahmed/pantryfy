@@ -3,7 +3,14 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { GroceryItem } from "@/types/grocery";
 import * as Haptics from "expo-haptics";
-import { COLORS, SPACING, FONT_SIZE } from "@/constants/theme";
+import {
+  COLORS,
+  SPACING,
+  FONT_SIZE,
+  BORDER_RADIUS,
+  SHADOWS,
+  CLAY_BORDER,
+} from "@/constants/theme";
 
 interface GroceryListItemProps {
   item: GroceryItem;
@@ -29,11 +36,22 @@ export function GroceryListItem({
   return (
     <View style={[styles.row, item.checked && styles.rowChecked]}>
       <TouchableOpacity style={styles.checkbox} onPress={handleCheck}>
-        <Ionicons
-          name={item.checked ? "checkmark-circle" : "ellipse-outline"}
-          size={24}
-          color={item.checked ? COLORS.primary : COLORS.border}
-        />
+        <View
+          style={[
+            styles.checkboxIcon,
+            item.checked && styles.checkboxIconChecked,
+          ]}
+        >
+          {item.checked ? (
+            <Ionicons
+              name="checkmark"
+              size={16}
+              color={COLORS.textOnPrimary}
+            />
+          ) : (
+            <View style={styles.checkboxEmpty} />
+          )}
+        </View>
       </TouchableOpacity>
       <View style={styles.content}>
         <Text
@@ -54,11 +72,18 @@ export function GroceryListItem({
         )}
       </View>
       <TouchableOpacity style={styles.homeButton} onPress={handleHaveAtHome}>
-        <Ionicons
-          name={item.haveAtHome ? "home" : "home-outline"}
-          size={18}
-          color={item.haveAtHome ? COLORS.primary : COLORS.textLight}
-        />
+        <View
+          style={[
+            styles.homeIconContainer,
+            item.haveAtHome && styles.homeIconActive,
+          ]}
+        >
+          <Ionicons
+            name={item.haveAtHome ? "home" : "home-outline"}
+            size={16}
+            color={item.haveAtHome ? COLORS.textOnPrimary : COLORS.textLight}
+          />
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -68,17 +93,42 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: SPACING.sm,
+    paddingVertical: SPACING.sm + 2,
     paddingHorizontal: SPACING.md,
+    marginHorizontal: SPACING.md,
+    marginBottom: SPACING.xs + 1,
     backgroundColor: COLORS.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.divider,
+    borderRadius: BORDER_RADIUS.md,
+    ...SHADOWS.sm,
+    ...CLAY_BORDER.subtle,
   },
   rowChecked: {
-    opacity: 0.6,
+    opacity: 0.55,
+    backgroundColor: COLORS.background,
   },
   checkbox: {
     marginRight: SPACING.sm,
+  },
+  checkboxIcon: {
+    width: 26,
+    height: 26,
+    borderRadius: 9,
+    backgroundColor: COLORS.background,
+    alignItems: "center",
+    justifyContent: "center",
+    ...SHADOWS.inset,
+    borderWidth: 1.5,
+    borderColor: COLORS.borderLight,
+  },
+  checkboxIconChecked: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primaryDark,
+  },
+  checkboxEmpty: {
+    width: 10,
+    height: 10,
+    borderRadius: 3,
+    backgroundColor: COLORS.borderLight,
   },
   content: {
     flex: 1,
@@ -86,7 +136,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: FONT_SIZE.md,
     color: COLORS.text,
-    fontWeight: "500",
+    fontWeight: "600",
   },
   nameChecked: {
     textDecorationLine: "line-through",
@@ -98,6 +148,20 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   homeButton: {
-    padding: SPACING.sm,
+    padding: SPACING.xs,
+  },
+  homeIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: COLORS.background,
+    alignItems: "center",
+    justifyContent: "center",
+    ...SHADOWS.sm,
+    ...CLAY_BORDER.subtle,
+  },
+  homeIconActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primaryDark,
   },
 });

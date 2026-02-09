@@ -13,7 +13,8 @@ export default function SavedScreen() {
   const recipes = useQuery(api.recipes.getSavedRecipes);
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  if (recipes === undefined) return <LoadingSpinner message="Loading saved recipes..." />;
+  if (recipes === undefined)
+    return <LoadingSpinner message="Loading saved recipes..." />;
 
   return (
     <View style={styles.container}>
@@ -50,6 +51,6 @@ const styles = StyleSheet.create({
   },
   list: {
     padding: SPACING.md,
-    paddingBottom: SPACING.xl * 3,
+    paddingBottom: SPACING.xl * 4,
   },
 });

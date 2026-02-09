@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS } from "@/constants/theme";
+import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS, SHADOWS, CLAY_BORDER } from "@/constants/theme";
 
 interface SmartSuggestionProps {
   loading: boolean;
@@ -23,49 +23,66 @@ export function SmartSuggestion({
 
   if (loading) {
     return (
-      <LinearGradient
-        colors={["#667eea", "#764ba2"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.container}
-      >
-        <View style={styles.loadingRow}>
-          <ActivityIndicator size="small" color="#fff" />
-          <Text style={styles.loadingText}>Chef AI is thinking...</Text>
-        </View>
-      </LinearGradient>
+      <View style={styles.outerWrapper}>
+        <LinearGradient
+          colors={["#8B7AED", "#6C5CD4"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.container}
+        >
+          <View style={styles.loadingRow}>
+            <ActivityIndicator size="small" color="#fff" />
+            <Text style={styles.loadingText}>Chef AI is thinking...</Text>
+          </View>
+        </LinearGradient>
+      </View>
     );
   }
 
   if (!suggestion) return null;
 
   return (
-    <LinearGradient
-      colors={["#667eea", "#764ba2"]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.container}
-    >
-      <View style={styles.header}>
-        <Ionicons name="sparkles" size={18} color="#FFD700" />
-        <Text style={styles.headerText}>AI Suggestion</Text>
-      </View>
-      <Text style={styles.dishName}>{suggestion.dish}</Text>
-      <Text style={styles.reason}>{suggestion.reason}</Text>
-      <View style={styles.tipRow}>
-        <Ionicons name="bulb-outline" size={14} color="rgba(255,255,255,0.8)" />
-        <Text style={styles.tip}>{suggestion.tip}</Text>
-      </View>
-    </LinearGradient>
+    <View style={styles.outerWrapper}>
+      <LinearGradient
+        colors={["#8B7AED", "#6C5CD4"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.container}
+      >
+        <View style={styles.header}>
+          <View style={styles.sparkleContainer}>
+            <Ionicons name="sparkles" size={16} color="#FFD700" />
+          </View>
+          <Text style={styles.headerText}>AI Suggestion</Text>
+        </View>
+        <Text style={styles.dishName}>{suggestion.dish}</Text>
+        <Text style={styles.reason}>{suggestion.reason}</Text>
+        <View style={styles.tipContainer}>
+          <View style={styles.tipRow}>
+            <Ionicons
+              name="bulb-outline"
+              size={14}
+              color="rgba(255,255,255,0.85)"
+            />
+            <Text style={styles.tip}>{suggestion.tip}</Text>
+          </View>
+        </View>
+      </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  outerWrapper: {
     marginHorizontal: SPACING.md,
     marginTop: SPACING.md,
-    padding: SPACING.md,
-    borderRadius: BORDER_RADIUS.lg,
+    borderRadius: BORDER_RADIUS.xl,
+    ...SHADOWS.lg,
+    ...CLAY_BORDER.medium,
+  },
+  container: {
+    padding: SPACING.md + 2,
+    borderRadius: BORDER_RADIUS.xl,
   },
   loadingRow: {
     flexDirection: "row",
@@ -75,20 +92,28 @@ const styles = StyleSheet.create({
   loadingText: {
     color: "#fff",
     fontSize: FONT_SIZE.sm,
-    fontWeight: "500",
+    fontWeight: "600",
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    gap: SPACING.xs,
+    gap: SPACING.sm,
     marginBottom: SPACING.sm,
+  },
+  sparkleContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   headerText: {
     color: "rgba(255,255,255,0.9)",
     fontSize: FONT_SIZE.xs,
-    fontWeight: "600",
+    fontWeight: "700",
     textTransform: "uppercase",
-    letterSpacing: 1,
+    letterSpacing: 1.2,
   },
   dishName: {
     color: "#fff",
@@ -102,13 +127,18 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: SPACING.sm,
   },
+  tipContainer: {
+    backgroundColor: "rgba(255,255,255,0.12)",
+    borderRadius: BORDER_RADIUS.sm,
+    padding: SPACING.sm,
+  },
   tipRow: {
     flexDirection: "row",
     alignItems: "flex-start",
     gap: SPACING.xs,
   },
   tip: {
-    color: "rgba(255,255,255,0.8)",
+    color: "rgba(255,255,255,0.85)",
     fontSize: FONT_SIZE.xs,
     flex: 1,
     fontStyle: "italic",
