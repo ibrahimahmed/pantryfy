@@ -5,11 +5,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
-  Dimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
 import {
   COLORS,
   SPACING,
@@ -19,12 +17,6 @@ import {
   CLAY_BORDER,
 } from "@/constants/theme";
 
-const SOCIAL_ICONS = [
-  { name: "logo-tiktok", color: "#000", bg: "#F0F0F0" },
-  { name: "logo-youtube", color: "#FF0000", bg: "#FFE8E8" },
-  { name: "logo-instagram", color: "#C13584", bg: "#FCE4F0" },
-  { name: "logo-pinterest", color: "#E60023", bg: "#FFE0E6" },
-];
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -52,30 +44,6 @@ export default function WelcomeScreen() {
                 </View>
               </LinearGradient>
             </View>
-
-            {/* Floating social icons - kept within container bounds */}
-            {SOCIAL_ICONS.map((icon, idx) => (
-              <View
-                key={icon.name}
-                style={[
-                  styles.floatingIcon,
-                  {
-                    top: idx < 2 ? 10 + idx * 60 : 30 + (idx - 2) * 60,
-                    [idx % 2 === 0 ? "left" : "right"]: 4,
-                  },
-                ]}
-              >
-                <View
-                  style={[styles.iconBubble, { backgroundColor: icon.bg }]}
-                >
-                  <Ionicons
-                    name={icon.name as any}
-                    size={22}
-                    color={icon.color}
-                  />
-                </View>
-              </View>
-            ))}
           </View>
 
           <Text style={styles.title}>Save recipes from{"\n"}anywhere</Text>
@@ -89,7 +57,7 @@ export default function WelcomeScreen() {
         <View style={styles.bottomSection}>
           <TouchableOpacity
             style={styles.ctaButton}
-            onPress={() => router.push("/(onboarding)/social-proof")}
+            onPress={() => router.push("/(onboarding)/goals")}
             activeOpacity={0.85}
           >
             <LinearGradient
@@ -170,19 +138,6 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     backgroundColor: COLORS.clayHighlight,
-  },
-  floatingIcon: {
-    position: "absolute",
-    zIndex: 10,
-  },
-  iconBubble: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
-    ...SHADOWS.sm,
-    ...CLAY_BORDER.subtle,
   },
   title: {
     fontSize: 30,

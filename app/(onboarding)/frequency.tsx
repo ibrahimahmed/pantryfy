@@ -36,7 +36,7 @@ export default function FrequencyScreen() {
         {/* Progress bar */}
         <View style={styles.progressContainer}>
           <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: "37.5%" }]} />
+            <View style={[styles.progressFill, { width: "33%" }]} />
           </View>
         </View>
 
