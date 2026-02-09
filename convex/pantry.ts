@@ -1,10 +1,15 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { auth } from "./auth";
+
+async function getUserId(ctx: any): Promise<string> {
+  const userId = await auth.getUserId(ctx);
+  return userId ?? "anonymous";
+}
 
 export const getPantryItems = query({
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    const userId = identity?.subject ?? "anonymous";
+    const userId = await getUserId(ctx);
     return await ctx.db
       .query("pantryItems")
       .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -15,8 +20,7 @@ export const getPantryItems = query({
 export const addPantryItem = mutation({
   args: { name: v.string(), category: v.string() },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    const userId = identity?.subject ?? "anonymous";
+    const userId = await getUserId(ctx);
     return await ctx.db.insert("pantryItems", {
       userId,
       name: args.name,

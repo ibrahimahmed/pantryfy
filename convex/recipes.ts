@@ -1,5 +1,11 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { auth } from "./auth";
+
+async function getUserId(ctx: any): Promise<string> {
+  const userId = await auth.getUserId(ctx);
+  return userId ?? "anonymous";
+}
 
 export const saveRecipe = mutation({
   args: {
@@ -23,8 +29,7 @@ export const saveRecipe = mutation({
     servings: v.number(),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    const userId = identity?.subject ?? "anonymous";
+    const userId = await getUserId(ctx);
     return await ctx.db.insert("savedRecipes", {
       title: args.title,
       source: args.source,
@@ -40,8 +45,7 @@ export const saveRecipe = mutation({
 
 export const getSavedRecipes = query({
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    const userId = identity?.subject ?? "anonymous";
+    const userId = await getUserId(ctx);
     return await ctx.db
       .query("savedRecipes")
       .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -66,8 +70,7 @@ export const deleteRecipe = mutation({
 export const isRecipeSaved = query({
   args: { spoonacularId: v.number() },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    const userId = identity?.subject ?? "anonymous";
+    const userId = await getUserId(ctx);
     const recipes = await ctx.db
       .query("savedRecipes")
       .withIndex("by_user", (q) => q.eq("userId", userId))

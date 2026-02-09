@@ -25,7 +25,7 @@ export function SmartSuggestion({
     return (
       <View style={styles.outerWrapper}>
         <LinearGradient
-          colors={["#8B7AED", "#6C5CD4"]}
+          colors={[COLORS.primary, COLORS.primaryDark]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.container}
@@ -44,14 +44,14 @@ export function SmartSuggestion({
   return (
     <View style={styles.outerWrapper}>
       <LinearGradient
-        colors={["#8B7AED", "#6C5CD4"]}
+        colors={[COLORS.primary, COLORS.primaryDark]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.container}
       >
         <View style={styles.header}>
           <View style={styles.sparkleContainer}>
-            <Ionicons name="sparkles" size={16} color="#FFD700" />
+            <Ionicons name="sparkles" size={16} color={COLORS.accent} />
           </View>
           <Text style={styles.headerText}>AI Suggestion</Text>
         </View>

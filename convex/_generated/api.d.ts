@@ -13,6 +13,7 @@ import type * as ai from "../ai.js";
 import type * as auth from "../auth.js";
 import type * as extract from "../extract.js";
 import type * as http from "../http.js";
+import type * as migrations from "../migrations.js";
 import type * as pantry from "../pantry.js";
 import type * as planner from "../planner.js";
 import type * as recipes from "../recipes.js";
@@ -29,6 +30,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   extract: typeof extract;
   http: typeof http;
+  migrations: typeof migrations;
   pantry: typeof pantry;
   planner: typeof planner;
   recipes: typeof recipes;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Platform } from "react-native";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -31,6 +31,7 @@ function NavigationGuard({ children }: { children: React.ReactNode }) {
   const segments = useSegments();
   const router = useRouter();
   const [isHydrated, setIsHydrated] = useState(false);
+  const didInitialRedirect = useRef(false);
 
   useEffect(() => {
     const unsub = useOnboardingStore.persist.onFinishHydration(() => {
@@ -45,10 +46,20 @@ function NavigationGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isHydrated) return;
 
-    const inOnboarding = segments[0] === "(onboarding)";
     const inAuth = segments[0] === "(auth)";
     const inPaywall = segments[0] === "paywall";
+    const inOnboarding = segments[0] === "(onboarding)";
 
+    // On first load: always start onboarding from the welcome screen
+    if (!didInitialRedirect.current) {
+      didInitialRedirect.current = true;
+      if (!hasCompletedOnboarding && !inPaywall && !inAuth) {
+        router.replace("/(onboarding)/welcome");
+        return;
+      }
+    }
+
+    // Ongoing guard: prevent navigating out of onboarding before completing
     if (!hasCompletedOnboarding && !inOnboarding && !inPaywall && !inAuth) {
       router.replace("/(onboarding)/welcome");
     }

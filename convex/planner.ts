@@ -1,11 +1,16 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { auth } from "./auth";
+
+async function getUserId(ctx: any): Promise<string> {
+  const userId = await auth.getUserId(ctx);
+  return userId ?? "anonymous";
+}
 
 export const getMealPlan = query({
   args: { startDate: v.string(), endDate: v.string() },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    const userId = identity?.subject ?? "anonymous";
+    const userId = await getUserId(ctx);
     const plans = await ctx.db
       .query("mealPlans")
       .withIndex("by_user_date", (q) => q.eq("userId", userId))
@@ -27,8 +32,7 @@ export const setMealPlan = mutation({
     recipeId: v.id("savedRecipes"),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    const userId = identity?.subject ?? "anonymous";
+    const userId = await getUserId(ctx);
     const existing = await ctx.db
       .query("mealPlans")
       .withIndex("by_user_date", (q) =>

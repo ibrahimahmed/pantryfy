@@ -61,7 +61,7 @@ export default function SignInScreen() {
 
   const handleVerifyCode = async () => {
     const trimmedCode = code.trim();
-    if (!trimmedCode || trimmedCode.length < 6) {
+    if (!trimmedCode || trimmedCode.length < 4) {
       setError("Please enter the verification code");
       return;
     }
@@ -226,7 +226,7 @@ export default function SignInScreen() {
                   <TextInput
                     ref={codeInputRef}
                     style={styles.input}
-                    placeholder="Enter 8-digit code"
+                    placeholder="Enter 4-digit code"
                     placeholderTextColor={COLORS.textLight}
                     value={code}
                     onChangeText={(t) => {
@@ -235,7 +235,7 @@ export default function SignInScreen() {
                     }}
                     keyboardType="number-pad"
                     autoComplete="one-time-code"
-                    maxLength={8}
+                    maxLength={4}
                     returnKeyType="go"
                     onSubmitEditing={handleVerifyCode}
                     editable={!loading}

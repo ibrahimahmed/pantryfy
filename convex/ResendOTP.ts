@@ -13,7 +13,7 @@ export const ResendOTP = Email({
   apiKey: process.env.AUTH_RESEND_KEY,
   maxAge: 60 * 15, // 15 minutes
   async generateVerificationToken() {
-    return generateOTP(8);
+    return generateOTP(4);
   },
   async sendVerificationRequest({ identifier: email, provider, token }) {
     // Call the Resend REST API directly via fetch (no Node.js deps needed)

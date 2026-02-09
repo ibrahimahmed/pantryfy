@@ -1,49 +1,62 @@
 // Claymorphism Design System
-// Soft, inflated 3D elements with pastel tones, rounded corners, and layered shadows
+// Soft, inflated 3D elements with warm kitchen tones, rounded corners, and layered shadows
+//
+// Palette anchors:
+//   Sky Clay     #90B9D6  – Primary / brand text / main UI accents
+//   Soft Peach   #F3A68F  – Secondary / buttons / main cupboard body
+//   Fresh Sage   #B4E1C6  – Success states / recipe cupboard door
+//   Off-White    #F5F1E6  – Backgrounds / container fills
+//   Clay Orange  #E67E45  – High-contrast accents / ingredients
 
 export const COLORS = {
-  // Core palette - warm pastels
-  primary: "#7C6AEF",
-  primaryLight: "#B4A7F5",
-  primaryDark: "#5B48C2",
-  primaryMuted: "#EDE9FE",
+  // Core palette – kitchen-inspired warmth
+  primary: "#90B9D6",
+  primaryLight: "#B5D1E5",
+  primaryDark: "#5E8FAE",
+  primaryMuted: "#E0EEF5",
 
-  secondary: "#F59E6C",
-  secondaryLight: "#FBC4A0",
-  secondaryDark: "#D97B3F",
-  secondaryMuted: "#FFF0E6",
+  secondary: "#F3A68F",
+  secondaryLight: "#F8C5B6",
+  secondaryDark: "#D88A72",
+  secondaryMuted: "#FDE8E0",
 
-  // Backgrounds - soft, layered depth
-  background: "#E8EAF0",
-  backgroundWarm: "#F0ECF8",
-  surface: "#F5F6FA",
+  // Accent – high-contrast kitchen orange
+  accent: "#E67E45",
+  accentLight: "#F0A67A",
+  accentDark: "#C46530",
+  accentMuted: "#FCE8D8",
+
+  // Backgrounds – warm cream, layered depth
+  background: "#F5F1E6",
+  backgroundWarm: "#F0EBE0",
+  surface: "#FAF8F2",
   surfaceElevated: "#FFFFFF",
 
-  // Text - muted, comfortable contrast
-  text: "#2D3142",
-  textSecondary: "#6B7394",
-  textLight: "#9CA3C0",
+  // Text – warm contrast
+  text: "#3B3229",
+  textSecondary: "#7A7068",
+  textLight: "#A69E95",
   textOnPrimary: "#FFFFFF",
-  textOnDark: "#F0F0F5",
+  textOnDark: "#F5F1E6",
 
   // Semantic
-  success: "#5CB87A",
-  successMuted: "#E3F5E9",
-  warning: "#F5B944",
-  warningMuted: "#FFF6E0",
-  error: "#E86161",
-  errorMuted: "#FDE8E8",
+  success: "#5A9E7A",
+  successMuted: "#B4E1C6",
+  warning: "#E67E45",
+  warningMuted: "#FCE8D8",
+  error: "#D96B6B",
+  errorMuted: "#F8E0E0",
 
   // Structural
-  border: "#D5D9E2",
-  borderLight: "#E8ECF4",
-  divider: "#E2E6EF",
-  overlay: "rgba(45,49,66,0.35)",
+  border: "#DDD8CC",
+  borderLight: "#E8E3D8",
+  divider: "#E4DFD4",
+  overlay: "rgba(59,50,41,0.35)",
 
   // Clay-specific
   clayHighlight: "rgba(255,255,255,0.6)",
   clayShadowLight: "rgba(255,255,255,0.8)",
-  clayShadowDark: "rgba(149,157,180,0.35)",
+  clayShadowDark: "rgba(154,144,136,0.35)",
   clayInnerGlow: "rgba(255,255,255,0.45)",
 };
 
@@ -78,7 +91,7 @@ export const BORDER_RADIUS = {
 export const SHADOWS = {
   // Subtle clay - for chips, badges, small elements
   sm: {
-    shadowColor: "#8B93A8",
+    shadowColor: "#9A9088",
     shadowOffset: { width: 3, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 6,
@@ -86,7 +99,7 @@ export const SHADOWS = {
   },
   // Standard clay - for cards, inputs, containers
   md: {
-    shadowColor: "#8B93A8",
+    shadowColor: "#9A9088",
     shadowOffset: { width: 4, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 10,
@@ -94,7 +107,7 @@ export const SHADOWS = {
   },
   // Prominent clay - for floating elements, FABs, modals
   lg: {
-    shadowColor: "#8B93A8",
+    shadowColor: "#9A9088",
     shadowOffset: { width: 6, height: 6 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
@@ -102,7 +115,7 @@ export const SHADOWS = {
   },
   // Pressed/inset appearance - simulated with colors
   inset: {
-    shadowColor: "#A0A8BE",
+    shadowColor: "#A89E95",
     shadowOffset: { width: 2, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,

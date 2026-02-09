@@ -84,6 +84,10 @@ export const useOnboardingStore = create<OnboardingState>()(
     {
       name: "pantryfy-onboarding",
       storage: createJSONStorage(() => AsyncStorage),
+      // Only persist the completion flag -- partial progress resets on reload
+      partialize: (state) => ({
+        hasCompletedOnboarding: state.hasCompletedOnboarding,
+      }),
     }
   )
 );

@@ -9,9 +9,9 @@ interface BadgeProps {
 }
 
 const BADGE_COLORS = {
-  success: { bg: COLORS.successMuted, text: "#2E7D4A" },
-  warning: { bg: COLORS.warningMuted, text: "#B8860B" },
-  error: { bg: COLORS.errorMuted, text: "#C62828" },
+  success: { bg: COLORS.successMuted, text: "#3D7A5A" },
+  warning: { bg: COLORS.warningMuted, text: "#C06A2E" },
+  error: { bg: COLORS.errorMuted, text: "#B84545" },
   primary: { bg: COLORS.primaryMuted, text: COLORS.primaryDark },
   secondary: { bg: COLORS.secondaryMuted, text: COLORS.secondaryDark },
 };
