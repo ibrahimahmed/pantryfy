@@ -13,7 +13,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { api } from "@/convex/_generated/api";
 import { ImportBanner } from "@/components/ImportBanner";
-import { ImportTutorial } from "@/components/ImportTutorial";
 import { SaveRecipeSheet } from "@/components/SaveRecipeSheet";
 import { SavedRecipeCard } from "@/components/SavedRecipeCard";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -35,7 +34,6 @@ export default function CookbooksScreen() {
   const insets = useSafeAreaInsets();
   const recipes = useQuery(api.recipes.getSavedRecipes);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [showTutorial, setShowTutorial] = useState(true);
 
   const handleImportPress = () => {
     setSheetOpen(true);
@@ -69,14 +67,6 @@ export default function CookbooksScreen() {
             <Ionicons name="cloud-download" size={14} color={COLORS.primary} />
             <Text style={styles.importCountText}>5/5 free</Text>
           </View>
-        </View>
-
-        {/* Tutorial banner */}
-        <View style={styles.tutorialSection}>
-          <ImportTutorial
-            visible={showTutorial}
-            onDismiss={() => setShowTutorial(false)}
-          />
         </View>
 
         {/* Import banner */}
@@ -191,9 +181,6 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.xs,
     fontWeight: "700",
     color: COLORS.primary,
-  },
-  tutorialSection: {
-    marginBottom: SPACING.md,
   },
   importSection: {
     marginBottom: SPACING.xl,

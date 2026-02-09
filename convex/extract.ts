@@ -27,17 +27,29 @@ function isInstagramUrl(url: string): boolean {
   return /instagram\.com\/(?:p|reel|reels)\//.test(url);
 }
 
+function getInstagramShortcode(url: string): string | null {
+  const match = url.match(
+    /instagram\.com\/(?:p|reel|reels)\/([A-Za-z0-9_-]+)/
+  );
+  return match ? match[1] : null;
+}
+
+const BROWSER_UA =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+
 // ---------------------------------------------------------------------------
-// Platform-specific fetchers
+// Platform-specific text/metadata fetchers
 // ---------------------------------------------------------------------------
 
 async function fetchYouTubeContent(
   url: string,
   videoId: string
 ): Promise<{ title: string; description: string; thumbnail?: string }> {
-  // 1) Try YouTube oEmbed for the title + thumbnail
   let title = "";
   let thumbnail: string | undefined;
+  let description = "";
+
+  // 1) oEmbed for title + thumbnail
   try {
     const oembed = await fetch(
       `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
@@ -51,20 +63,15 @@ async function fetchYouTubeContent(
     /* ignore */
   }
 
-  // 2) Fetch the watch page HTML to grab the description
-  let description = "";
+  // 2) Fetch watch page HTML for the description
   try {
     const page = await fetch(url, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept-Language": "en-US,en;q=0.9",
-      },
+      headers: { "User-Agent": BROWSER_UA, "Accept-Language": "en-US,en;q=0.9" },
     });
     if (page.ok) {
       const html = await page.text();
 
-      // Try to get description from meta tags
+      // Meta og:description
       const metaDesc =
         html.match(
           /(?:property|name)="og:description"\s+content="([^"]*?)"/i
@@ -72,11 +79,9 @@ async function fetchYouTubeContent(
         html.match(
           /content="([^"]*?)"\s+(?:property|name)="og:description"/i
         );
-      if (metaDesc) {
-        description = decodeHtmlEntities(metaDesc[1]);
-      }
+      if (metaDesc) description = decodeHtmlEntities(metaDesc[1]);
 
-      // Try the initial player response JSON (has the full description)
+      // ytInitialPlayerResponse (full description)
       const ytInitial = html.match(
         /var ytInitialPlayerResponse\s*=\s*(\{[\s\S]*?\});/
       );
@@ -87,26 +92,18 @@ async function fetchYouTubeContent(
             parsed?.videoDetails?.shortDescription ||
             parsed?.microformat?.playerMicroformatRenderer?.description
               ?.simpleText;
-          if (desc && desc.length > description.length) {
-            description = desc;
-          }
-          if (!title) {
-            title = parsed?.videoDetails?.title || title;
-          }
+          if (desc && desc.length > description.length) description = desc;
+          if (!title) title = parsed?.videoDetails?.title || title;
         } catch {
-          /* ignore parse errors */
+          /* ignore */
         }
       }
 
-      // Also try ytInitialData
-      const ytData = html.match(
-        /var ytInitialData\s*=\s*(\{[\s\S]*?\});/
-      );
+      // ytInitialData fallback
+      const ytData = html.match(/var ytInitialData\s*=\s*(\{[\s\S]*?\});/);
       if (ytData && !description) {
         try {
-          const text = ytData[1];
-          // Look for description snippets
-          const descMatch = text.match(
+          const descMatch = ytData[1].match(
             /"description":\{"simpleText":"([\s\S]*?)"\}/
           );
           if (descMatch) {
@@ -121,12 +118,8 @@ async function fetchYouTubeContent(
 
       if (!title) {
         const titleMatch = html.match(/<title>([^<]*)<\/title>/i);
-        if (titleMatch) {
-          title = decodeHtmlEntities(titleMatch[1]).replace(
-            / - YouTube$/,
-            ""
-          );
-        }
+        if (titleMatch)
+          title = decodeHtmlEntities(titleMatch[1]).replace(/ - YouTube$/, "");
       }
     }
   } catch {
@@ -143,7 +136,7 @@ async function fetchTikTokContent(
   let description = "";
   let thumbnail: string | undefined;
 
-  // 1) oEmbed
+  // 1) oEmbed (TikTok title = caption)
   try {
     const oembed = await fetch(
       `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`
@@ -151,22 +144,18 @@ async function fetchTikTokContent(
     if (oembed.ok) {
       const data = await oembed.json();
       title = data.title || "";
-      description = data.title || ""; // TikTok oEmbed title IS the caption
+      description = data.title || "";
       thumbnail = data.thumbnail_url;
     }
   } catch {
     /* ignore */
   }
 
-  // 2) Fetch page for more detail
+  // 2) Page HTML for more detail
   if (!description || description.length < 30) {
     try {
       const page = await fetch(url, {
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-          "Accept-Language": "en-US,en;q=0.9",
-        },
+        headers: { "User-Agent": BROWSER_UA, "Accept-Language": "en-US,en;q=0.9" },
       });
       if (page.ok) {
         const html = await page.text();
@@ -176,13 +165,17 @@ async function fetchTikTokContent(
           html.match(/name="description"\s+content="([^"]*?)"/i);
         if (metaDesc) {
           const decoded = decodeHtmlEntities(metaDesc[1]);
-          if (decoded.length > description.length) {
-            description = decoded;
-          }
+          if (decoded.length > description.length) description = decoded;
         }
         if (!title) {
           const titleMatch = html.match(/<title>([^<]*)<\/title>/i);
           if (titleMatch) title = decodeHtmlEntities(titleMatch[1]);
+        }
+        if (!thumbnail) {
+          const ogImage =
+            html.match(/property="og:image"\s+content="([^"]*?)"/i) ||
+            html.match(/content="([^"]*?)"\s+property="og:image"/i);
+          if (ogImage) thumbnail = ogImage[1];
         }
       }
     } catch {
@@ -196,33 +189,320 @@ async function fetchTikTokContent(
 async function fetchInstagramContent(
   url: string
 ): Promise<{ title: string; description: string; thumbnail?: string }> {
+  let title = "";
   let description = "";
   let thumbnail: string | undefined;
 
+  // 1) Instagram oEmbed API (works for some public posts)
   try {
-    const page = await fetch(url, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept-Language": "en-US,en;q=0.9",
-      },
+    const oembedUrl = `https://www.instagram.com/api/v1/oembed/?url=${encodeURIComponent(url)}`;
+    const oembed = await fetch(oembedUrl, {
+      headers: { "User-Agent": BROWSER_UA },
     });
-    if (page.ok) {
-      const html = await page.text();
-      const metaDesc =
-        html.match(/property="og:description"\s+content="([^"]*?)"/i) ||
-        html.match(/content="([^"]*?)"\s+property="og:description"/i);
-      if (metaDesc) description = decodeHtmlEntities(metaDesc[1]);
-      const ogImage =
-        html.match(/property="og:image"\s+content="([^"]*?)"/i) ||
-        html.match(/content="([^"]*?)"\s+property="og:image"/i);
-      if (ogImage) thumbnail = ogImage[1];
+    if (oembed.ok) {
+      const data = await oembed.json();
+      title = data.author_name ? `Recipe by ${data.author_name}` : "";
+      // oEmbed title usually contains the caption
+      if (data.title) {
+        description = data.title;
+        if (!title) title = data.title.slice(0, 60);
+      }
+      thumbnail = data.thumbnail_url;
     }
   } catch {
     /* ignore */
   }
 
-  return { title: "", description, thumbnail };
+  // 2) Try the captioned embed page
+  if (!description || !thumbnail) {
+    const shortcode = getInstagramShortcode(url);
+    if (shortcode) {
+      try {
+        const embedUrl = `https://www.instagram.com/p/${shortcode}/embed/captioned/`;
+        const page = await fetch(embedUrl, {
+          headers: {
+            "User-Agent": BROWSER_UA,
+            Accept:
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+          },
+        });
+        if (page.ok) {
+          const html = await page.text();
+          // Caption from embed page
+          if (!description) {
+            const captionMatch = html.match(
+              /class="Caption"[^>]*>[\s\S]*?<div[^>]*>([\s\S]*?)<\/div>/i
+            );
+            if (captionMatch) {
+              description = captionMatch[1]
+                .replace(/<[^>]+>/g, " ")
+                .replace(/\s+/g, " ")
+                .trim();
+            }
+          }
+          // Image from embed page
+          if (!thumbnail) {
+            const imgMatch =
+              html.match(
+                /class="EmbeddedMediaImage"[^>]*src="([^"]+)"/i
+              ) ||
+              html.match(/property="og:image"\s+content="([^"]+)"/i) ||
+              html.match(/content="([^"]+)"\s+property="og:image"/i);
+            if (imgMatch) thumbnail = imgMatch[1];
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  // 3) Fallback: direct page fetch (Instagram usually blocks this)
+  if (!description && !thumbnail) {
+    try {
+      const page = await fetch(url, {
+        headers: {
+          "User-Agent": BROWSER_UA,
+          "Accept-Language": "en-US,en;q=0.9",
+        },
+        redirect: "follow",
+      });
+      if (page.ok) {
+        const html = await page.text();
+        const metaDesc =
+          html.match(/property="og:description"\s+content="([^"]*?)"/i) ||
+          html.match(/content="([^"]*?)"\s+property="og:description"/i);
+        if (metaDesc) description = decodeHtmlEntities(metaDesc[1]);
+        const ogImage =
+          html.match(/property="og:image"\s+content="([^"]*?)"/i) ||
+          html.match(/content="([^"]*?)"\s+property="og:image"/i);
+        if (ogImage) thumbnail = ogImage[1];
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  return { title, description, thumbnail };
+}
+
+// ---------------------------------------------------------------------------
+// Thumbnail helpers
+// ---------------------------------------------------------------------------
+
+/** YouTube CDN provides auto-generated thumbnails at different video timestamps */
+function getYouTubeThumbnailUrls(videoId: string): string[] {
+  return [
+    // High-quality default thumbnail (always available)
+    `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+    // Auto-generated frames at ~25%, 50%, 75% of video duration
+    `https://img.youtube.com/vi/${videoId}/1.jpg`,
+    `https://img.youtube.com/vi/${videoId}/2.jpg`,
+    `https://img.youtube.com/vi/${videoId}/3.jpg`,
+  ];
+}
+
+/** Verify which thumbnail URLs actually resolve (filter out 404s) */
+async function filterValidThumbnails(urls: string[]): Promise<string[]> {
+  const checks = urls.map(async (url) => {
+    try {
+      const res = await fetch(url, { method: "HEAD" });
+      if (res.ok) return url;
+    } catch {
+      /* skip */
+    }
+    return null;
+  });
+  const results = await Promise.all(checks);
+  return results.filter((u): u is string => u !== null);
+}
+
+// ---------------------------------------------------------------------------
+// AI: Text-based recipe extraction (GPT-4o-mini -- fast, cheap)
+// ---------------------------------------------------------------------------
+
+async function extractRecipeFromText(
+  openaiKey: string,
+  content: { title: string; description: string },
+  platform: string
+): Promise<{
+  title: string;
+  servings: number;
+  ingredients: Array<{ name: string; quantity: number; unit: string; raw: string }>;
+} | null> {
+  const prompt = `This is the title and description from a ${platform} cooking video:
+
+Title: ${content.title}
+
+Description/Caption:
+${content.description.slice(0, 6000)}
+
+Extract the recipe from this video description. The ingredients and amounts are usually listed in the description or caption. If amounts are not specified, estimate reasonable quantities for 4 servings.
+
+Return JSON only:
+{
+  "title": "recipe name",
+  "servings": 4,
+  "ingredients": [
+    {"name": "flour", "quantity": 2, "unit": "cups", "raw": "2 cups all-purpose flour"}
+  ]
+}`;
+
+  try {
+    const aiResponse = await fetch(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${openaiKey}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are a recipe extraction assistant. Extract recipe ingredients from video descriptions. If the description lists ingredients, use those exact amounts. If only ingredient names are mentioned without amounts, estimate reasonable quantities for a home cook. Always return valid JSON.",
+            },
+            { role: "user", content: prompt },
+          ],
+          response_format: { type: "json_object" },
+          max_tokens: 1500,
+        }),
+      }
+    );
+
+    if (!aiResponse.ok) return null;
+
+    const aiData = await aiResponse.json();
+    const parsed = JSON.parse(aiData.choices[0].message.content || "{}");
+
+    if (parsed.title && parsed.ingredients?.length > 0) {
+      return {
+        title: parsed.title,
+        servings: parsed.servings || 4,
+        ingredients: parsed.ingredients,
+      };
+    }
+  } catch (e) {
+    console.error("Text extraction AI error:", e);
+  }
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// AI: Vision-based recipe extraction (GPT-4o -- best vision accuracy)
+// ---------------------------------------------------------------------------
+
+async function extractRecipeFromVision(
+  openaiKey: string,
+  thumbnailUrls: string[],
+  textContext: { title: string; description: string },
+  platform: string
+): Promise<{
+  title: string;
+  servings: number;
+  ingredients: Array<{ name: string; quantity: number; unit: string; raw: string }>;
+} | null> {
+  if (thumbnailUrls.length === 0) return null;
+
+  // Build multi-modal content array
+  const userContent: Array<
+    | { type: "text"; text: string }
+    | { type: "image_url"; image_url: { url: string; detail: string } }
+  > = [];
+
+  // Add text context if available
+  const hasText = textContext.title || textContext.description;
+  if (hasText) {
+    userContent.push({
+      type: "text",
+      text: `I'm extracting a recipe from a ${platform} cooking video.\n\nVideo title: ${textContext.title || "Unknown"}\nCaption/Description: ${textContext.description?.slice(0, 2000) || "Not available"}\n\nBelow are frames/thumbnails from the video. Analyze them carefully to identify the dish and ALL ingredients used:`,
+    });
+  } else {
+    userContent.push({
+      type: "text",
+      text: `I'm extracting a recipe from a ${platform} cooking video. No caption or description was available.\n\nBelow are frames/thumbnails from the video. Analyze them carefully to identify the dish being prepared and extract ALL ingredients you can see or infer:`,
+    });
+  }
+
+  // Add thumbnail images (up to 4)
+  for (const url of thumbnailUrls.slice(0, 4)) {
+    userContent.push({
+      type: "image_url",
+      image_url: { url, detail: "high" },
+    });
+  }
+
+  // Request structured output
+  userContent.push({
+    type: "text",
+    text: `Based on the video frames above, identify:
+1. What dish is being prepared
+2. Every ingredient visible or clearly implied (proteins, vegetables, grains, spices, oils, sauces, garnishes)
+3. Estimate realistic quantities for each ingredient
+
+Be thorough -- include seasonings, oils, and garnishes you can see or that would logically be used.
+
+Return JSON only:
+{
+  "title": "recipe name",
+  "servings": 4,
+  "ingredients": [
+    {"name": "ingredient name", "quantity": 2, "unit": "cups", "raw": "2 cups ingredient"}
+  ]
+}`,
+  });
+
+  try {
+    const aiResponse = await fetch(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${openaiKey}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are an expert chef and recipe analyst with perfect visual recognition. You analyze cooking video frames to identify dishes and extract complete ingredient lists. You never miss an ingredient -- you identify main components, seasonings, oils, sauces, and garnishes. You estimate accurate quantities based on visual cues. Always return valid JSON.",
+            },
+            { role: "user", content: userContent },
+          ],
+          response_format: { type: "json_object" },
+          max_tokens: 2000,
+        }),
+      }
+    );
+
+    if (!aiResponse.ok) {
+      const errText = await aiResponse.text();
+      console.error("Vision API error:", errText);
+      return null;
+    }
+
+    const aiData = await aiResponse.json();
+    const parsed = JSON.parse(aiData.choices[0].message.content || "{}");
+
+    if (parsed.title && parsed.ingredients?.length > 0) {
+      return {
+        title: parsed.title,
+        servings: parsed.servings || 4,
+        ingredients: parsed.ingredients,
+      };
+    }
+  } catch (e) {
+    console.error("Vision extraction error:", e);
+  }
+
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -255,7 +535,7 @@ function formatIngredient(i: any) {
 }
 
 // ---------------------------------------------------------------------------
-// Main action
+// Main action -- multi-stage extraction pipeline
 // ---------------------------------------------------------------------------
 
 export const extractRecipeFromUrl = action({
@@ -272,11 +552,18 @@ export const extractRecipeFromUrl = action({
     const isInsta = isInstagramUrl(args.url);
 
     if (ytId || isTikTok || isInsta) {
-      let content: {
-        title: string;
-        description: string;
-        thumbnail?: string;
-      };
+      if (!openaiKey) {
+        return {
+          success: false as const,
+          error:
+            "Add OPENAI_API_KEY in the Convex dashboard to enable video recipe extraction.",
+        };
+      }
+
+      const platform = ytId ? "YouTube" : isTikTok ? "TikTok" : "Instagram";
+
+      // ── Stage 1: Fetch text metadata ──────────────────────────────
+      let content: { title: string; description: string; thumbnail?: string };
 
       if (ytId) {
         content = await fetchYouTubeContent(args.url, ytId);
@@ -286,102 +573,70 @@ export const extractRecipeFromUrl = action({
         content = await fetchInstagramContent(args.url);
       }
 
-      const platform = ytId ? "YouTube" : isTikTok ? "TikTok" : "Instagram";
-
-      if (!content.description && !content.title) {
-        return {
-          success: false as const,
-          error: `Could not fetch video info from ${platform}. The video may be private or unavailable.`,
-        };
-      }
-
-      if (!openaiKey) {
-        return {
-          success: false as const,
-          error: `Got the video description but need OPENAI_API_KEY in Convex dashboard to parse the recipe from it.`,
-        };
-      }
-
-      // Send the video description to OpenAI
-      const prompt = `This is the title and description from a ${platform} cooking video:
-
-Title: ${content.title}
-
-Description/Caption:
-${content.description.slice(0, 6000)}
-
-Extract the recipe from this video description. The ingredients and amounts are usually listed in the description or caption. If amounts are not specified, estimate reasonable quantities for 4 servings.
-
-Return JSON only:
-{
-  "title": "recipe name",
-  "servings": 4,
-  "ingredients": [
-    {"name": "flour", "quantity": 2, "unit": "cups", "raw": "2 cups all-purpose flour"}
-  ]
-}`;
-
-      try {
-        const aiResponse = await fetch(
-          "https://api.openai.com/v1/chat/completions",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${openaiKey}`,
-            },
-            body: JSON.stringify({
-              model: "gpt-4o-mini",
-              messages: [
-                {
-                  role: "system",
-                  content:
-                    "You are a recipe extraction assistant. Extract recipe ingredients from video descriptions. If the description lists ingredients, use those exact amounts. If only ingredient names are mentioned without amounts, estimate reasonable quantities for a home cook. Always return valid JSON.",
-                },
-                { role: "user", content: prompt },
-              ],
-              response_format: { type: "json_object" },
-              max_tokens: 1500,
-            }),
-          }
+      // ── Stage 2: Try text-based extraction if we have description ─
+      if (content.description && content.description.length > 20) {
+        const textResult = await extractRecipeFromText(
+          openaiKey,
+          content,
+          platform
         );
-
-        if (!aiResponse.ok) {
-          const errText = await aiResponse.text();
-          console.error("OpenAI error:", errText);
-          return {
-            success: false as const,
-            error: "AI service error while parsing video recipe",
-          };
-        }
-
-        const aiData = await aiResponse.json();
-        const parsed = JSON.parse(
-          aiData.choices[0].message.content || "{}"
-        );
-
-        if (parsed.title && parsed.ingredients?.length > 0) {
+        if (textResult) {
           return {
             success: true as const,
             source: "ai" as const,
-            title: parsed.title,
-            servings: parsed.servings || 4,
+            title: textResult.title,
+            servings: textResult.servings,
             imageUrl: content.thumbnail || undefined,
-            ingredients: parsed.ingredients.map(formatIngredient),
+            ingredients: textResult.ingredients.map(formatIngredient),
           };
         }
-
-        return {
-          success: false as const,
-          error: `Could not find recipe ingredients in the ${platform} video description. The recipe may only be spoken in the video.`,
-        };
-      } catch (e) {
-        console.error("Video extraction error:", e);
-        return {
-          success: false as const,
-          error: "Failed to parse recipe from video",
-        };
       }
+
+      // ── Stage 3: Collect thumbnails for vision analysis ───────────
+      const thumbnailUrls: string[] = [];
+
+      // YouTube always has CDN thumbnails (multiple frames)
+      if (ytId) {
+        const ytThumbnails = getYouTubeThumbnailUrls(ytId);
+        const valid = await filterValidThumbnails(ytThumbnails);
+        thumbnailUrls.push(...valid);
+      }
+
+      // Add platform thumbnail from metadata (if not already included)
+      if (content.thumbnail) {
+        thumbnailUrls.push(content.thumbnail);
+      }
+
+      // ── Stage 4: Vision-based extraction on thumbnails ────────────
+      if (thumbnailUrls.length > 0) {
+        const visionResult = await extractRecipeFromVision(
+          openaiKey,
+          thumbnailUrls,
+          { title: content.title, description: content.description },
+          platform
+        );
+        if (visionResult) {
+          return {
+            success: true as const,
+            source: "ai" as const,
+            title: visionResult.title,
+            servings: visionResult.servings,
+            imageUrl: content.thumbnail || thumbnailUrls[0] || undefined,
+            ingredients: visionResult.ingredients.map(formatIngredient),
+          };
+        }
+      }
+
+      // ── Stage 5: All automated methods failed ─────────────────────
+      const tips =
+        platform === "Instagram"
+          ? "Instagram often blocks automated access. Try copying the recipe caption and using the Manual tab instead."
+          : `Could not extract the recipe from this ${platform} video. The recipe may only be spoken in the video. Try using the Manual tab instead.`;
+
+      return {
+        success: false as const,
+        error: tips,
+      };
     }
 
     // ------------------------------------------------------------------
@@ -425,8 +680,7 @@ Return JSON only:
       try {
         const pageResponse = await fetch(args.url, {
           headers: {
-            "User-Agent":
-              "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "User-Agent": BROWSER_UA,
             Accept: "text/html,application/xhtml+xml",
             "Accept-Language": "en-US,en;q=0.9",
           },

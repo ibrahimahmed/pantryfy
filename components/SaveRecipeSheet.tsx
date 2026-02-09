@@ -48,6 +48,7 @@ export function SaveRecipeSheet({ visible, onClose }: SaveRecipeSheetProps) {
     result,
     error,
     reset,
+    status,
   } = useRecipeExtraction();
 
   const handleExtract = () => {
@@ -180,7 +181,9 @@ export function SaveRecipeSheet({ visible, onClose }: SaveRecipeSheetProps) {
         <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
           {tab === "url" ? (
             <View>
-              <Text style={styles.label}>Paste recipe or YouTube link</Text>
+              <Text style={styles.label}>
+                Paste any recipe, Instagram, TikTok, or YouTube link
+              </Text>
               <View style={styles.inputWrapper}>
                 <TextInput
                   style={styles.input}
@@ -208,7 +211,14 @@ export function SaveRecipeSheet({ visible, onClose }: SaveRecipeSheetProps) {
                   style={styles.extractGradient}
                 >
                   {extracting ? (
-                    <ActivityIndicator size="small" color="#fff" />
+                    <View style={styles.extractingRow}>
+                      <ActivityIndicator size="small" color="#fff" />
+                      {status ? (
+                        <Text style={styles.extractingStatusText}>
+                          {status}
+                        </Text>
+                      ) : null}
+                    </View>
                   ) : (
                     <Text style={styles.extractButtonText}>Extract Recipe</Text>
                   )}
@@ -420,6 +430,17 @@ const styles = StyleSheet.create({
     color: COLORS.textOnPrimary,
     fontSize: FONT_SIZE.md,
     fontWeight: "700",
+  },
+  extractingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  extractingStatusText: {
+    color: COLORS.textOnPrimary,
+    fontSize: FONT_SIZE.sm,
+    fontWeight: "600",
+    opacity: 0.9,
   },
   buttonDisabled: {
     opacity: 0.5,
